@@ -147,7 +147,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="map-timeline-controls">
+				<div class="timeline">
 					<div class="play-pause-control control">
 						<a class="play-btn btn"><i class="fa fa-play-circle-o"></i></a>
 						<a class="pause-btn btn"><i class="fa fa-pause-circle-o"></i></a>

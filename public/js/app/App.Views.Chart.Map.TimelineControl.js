@@ -1,6 +1,80 @@
 ;(function() {
 	"use strict";
-	owid.namespace("App.Views.Chart.Map.TimelineControl");
+	owid.namespace("owid.view.timeslider");
+
+	owid.view.timeline = function(chart, containerNode) {
+		var timeline = {};
+
+		var config = {
+			years: [1900, 1920, 1940, 2000], // Series of selectable years
+			startYear: 1920, // Selected start year for range
+			endYear: 1940 // Selected end year for range
+		};
+		timeline.config = config;
+
+		var changes = owid.changes();
+		changes.track(config);
+
+		var minYear, maxYear;
+
+		var $container = $(containerNode),
+			$el, $sliderWrapper, $slider, $sliderLabel, $sliderInput, $startYear, $endYear;
+
+		function initialize() {
+			if ($el && $el.length !== 0) return;
+
+			$el = chart.$(".timeline").clone();
+			timeline.$el = $el;
+			$container.append($el);
+			$sliderWrapper = $el.find(".timeline-wrapper");
+			$slider = $el.find(".timeline-slider");
+			$sliderLabel = $slider.find(".timeline-slider-label");
+			$sliderInput = $sliderWrapper.find("[type='range']");
+			$startYear = $el.find(".timeline-start-year");
+			$endYear = $el.find(".timeline-end-year");
+		}
+
+		timeline.node = function() {
+			return $el.get(0);
+		};
+
+		timeline.render = function() {
+			if (!changes.start()) return;
+
+			initialize();
+
+			if (changes.any('years')) {
+				minYear = _.first(config.years);
+				maxYear = _.last(config.years);
+
+				$startYear.text(owid.displayYear(minYear));
+				$endYear.text(owid.displayYear(maxYear));
+
+				if (owid.displayYear(minYear).length > 4) 
+					$startYear.css('font-size', '10px');
+				else
+					$startYear.css('font-size', "");
+
+				if (owid.displayYear(maxYear).length > 4) 
+					$endYear.css('font-size', '10px');
+				else
+					$endYear.css('font-size', "");
+				
+				$sliderInput.attr("min", minYear);
+				$sliderInput.attr("max", maxYear);				
+
+				if (minYear == maxYear) {
+					$sliderInput.prop("disabled", true);
+				} else {
+					$sliderInput.prop("disabled", false);
+				}
+			}
+			
+			changes.done();
+		};
+
+		return timeline;
+	};
 	
 	App.Views.Chart.Map.TimelineControl = owid.View.extend({
 		el: "#map-chart-tab .map-timeline-controls .timeline-control",
@@ -12,13 +86,6 @@
 		initialize: function( options ) {
 			this.dispatcher = options.dispatcher;
 			
-			this.$sliderWrapper = this.$el.find( ".timeline-wrapper" );
-			this.$slider = this.$el.find( ".timeline-slider" );
-			this.$sliderLabel = this.$slider.find( ".timeline-slider-label" );
-			this.$sliderInput = this.$sliderWrapper.find( "[type='range']" );
-
-			this.$startYear = this.$el.find( ".timeline-start-year" );
-			this.$endYear = this.$el.find( ".timeline-end-year" );
 
 			this.listenTo(this.dispatcher, "increment-time", this.onIncrementTime.bind(this));
 			this.listenTo(App.MapModel, "change:targetYear", this.onChangeYear.bind(this));
@@ -66,38 +133,6 @@
 		},
 
 		render: function() {
-			var years = App.MapModel.getYears(),
-				targetYear = App.MapModel.get("targetYear");
-
-			this.years = years;
-			this.minYear = this.years[0];
-			this.maxYear = this.years[this.years.length-1];
-			this.targetYear = targetYear;
-
-			this.$startYear.text(owid.displayYear(this.minYear));
-			this.$endYear.text(owid.displayYear(this.maxYear));
-
-			if (owid.displayYear(this.minYear).length > 4) 
-				this.$startYear.css('font-size', '10px');
-			else
-				this.$startYear.css('font-size', "");
-
-			if (owid.displayYear(this.maxYear).length > 4) 
-				this.$endYear.css('font-size', '10px');
-			else
-				this.$endYear.css('font-size', "");
-			
-			this.$sliderInput.attr( "min", this.minYear );
-			this.$sliderInput.attr( "max", this.maxYear );
-			
-			this.updateSliderInput( this.targetYear );
-			
-			if (this.minYear == this.maxYear) {
-				this.$sliderInput.attr("disabled", true);
-			} else {
-				this.$sliderInput.attr("disabled", false);
-			}
-
 			this.createTicks(this.$sliderInput);
 		},
 
@@ -150,7 +185,7 @@
 			this.setTargetYear(nextYear);
 		},
 
-		createTicks: function( $input ) {
+/*		createTicks: function( $input ) {
 			if( this.$el.find( ".timeline-ticks" ).length ) {
 				//this.$el.find(".timeline-ticks").remove();
 				//already has ticks, bail
@@ -180,7 +215,7 @@
 
 		hide: function() {
 			this.$el.css( "display", "none" );
-		}
+		}*/
 
 	});
 })();

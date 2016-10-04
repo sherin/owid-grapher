@@ -142,7 +142,7 @@ class Chart extends Model {
 			// Create a temporary marker file so we don't double up on requests
 			touch($tmpfile);
 			$command = "(" . $phantomjs . " " . $rasterize . " " . escapeshellarg($target) . " " . escapeshellarg($file) . " '" . $width . "px*" . $height . "px'" . " >/dev/null 2>/dev/null; rm " . $tmpfile . ";) &";
-			Log::info($command);
+//			Log::info($command);
 			exec($command);			
 		}
 	}

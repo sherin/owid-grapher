@@ -12,7 +12,7 @@ else
   echo "Please select either live or test."
   exit 1
 fi
-
+  
 OLD_REPO="$ROOT/tmp/$NAME-old"
 SYNC_TARGET="$ROOT/tmp/$NAME"
 TMP_NEW="$ROOT/tmp/$NAME-new"

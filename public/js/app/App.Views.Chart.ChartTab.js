@@ -45,6 +45,7 @@
 		var xDomain, yDomain, isClamped;
 
 		chartTab.scaleSelectors = owid.view.scaleSelectors(chart);
+		var timeline = owid.view.timeline(chart, chart.$("#chart-chart-tab").get(0));
 
 		var nvOptions = {
 			showLegend: false
@@ -70,6 +71,7 @@
 			configureAxis();
 			configureBounds();
 			renderLegend();
+			renderTimeline();
 
 			$(".chart-error").remove();
 			if (missingMsg || _.isEmpty(localData)) {
@@ -494,6 +496,11 @@
 			} else {
 				$svg.find("> .nvd3.nv-custom-legend").hide();
 			}			
+		}
+
+		function renderTimeline() {
+			timeline.render();
+			chartHeight -= chart.getBounds(timeline.node()).height + 10;
 		}
 
 		function splitSeriesByMissing(localData) {
