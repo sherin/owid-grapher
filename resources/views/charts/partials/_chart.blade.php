@@ -152,20 +152,11 @@
 						<a class="play-btn btn"><i class="fa fa-play-circle-o"></i></a>
 						<a class="pause-btn btn"><i class="fa fa-pause-circle-o"></i></a>
 					</div>
-					<div class="timeline-control control">
-						<div class="timeline-wrapper">
-							<div class="timeline-start-year">1950</div>
-							<div class="timeline-end-year">2000</div>
-							<div class="timeline-slider">
-								<span class="timeline-slider-label">1980</span>
-							</div>
-							<input list="timeline-range" type="range" min="1950" max="2010" step="1" />
-						</div>
+					<div class="timeline-start-year">1950</div>
+					<div class="timeline-slider">
+						<span class="timeline-slider-label">1980</span>
 					</div>
-					<div class="buttons-control control">
-						<ul class="buttons-wrapper">
-						</ul>
-					</div>
+					<div class="timeline-end-year">2000</div>
 				</div>
 			</div>		
 			<div id="sources-chart-tab" class="tab-pane"></div>
