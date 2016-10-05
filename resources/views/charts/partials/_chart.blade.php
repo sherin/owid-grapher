@@ -152,11 +152,13 @@
 						<a class="play-btn btn"><i class="fa fa-play-circle-o"></i></a>
 						<a class="pause-btn btn"><i class="fa fa-pause-circle-o"></i></a>
 					</div>
-					<div class="timeline-start-year">1950</div>
+					<div class="timeline-min-year">1950</div>
 					<div class="timeline-slider">
-						<span class="timeline-slider-label">1980</span>
+						<div class="timeline-marker start"></div>
+						<div class="timeline-marker end"></div>
+<!--						<span class="timeline-slider-label">1980</span>-->
 					</div>
-					<div class="timeline-end-year">2000</div>
+					<div class="timeline-max-year">2000</div>
 				</div>
 			</div>		
 			<div id="sources-chart-tab" class="tab-pane"></div>

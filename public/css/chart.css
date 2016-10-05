@@ -871,7 +871,16 @@ select.disabled {
     background: #d5d5d5;
     flex-grow: 1;
     height: 1.4em;
+    position: relative;
+}
 
+#chart .timeline .timeline-marker {
+    width: 1em;
+    height: 2em;
+    background: black;
+    position: absolute;
+    left: 0%;
+    cursor: ew-resize;
 }
 
 /* Export

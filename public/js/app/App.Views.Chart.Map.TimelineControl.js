@@ -1,14 +1,14 @@
 ;(function() {
 	"use strict";
-	owid.namespace("owid.view.timeslider");
+	owid.namespace("owid.view.timeline");
 
 	owid.view.timeline = function(chart, containerNode) {
 		var timeline = {};
 
 		var config = {
 			years: [1900, 1920, 1940, 2000], // Series of selectable years
-			startYear: 1920, // Selected start year for range
-			endYear: 1940 // Selected end year for range
+			startYear: 1960, // Selected start year for range
+			endYear: 1980 // Selected end year for range
 		};
 		timeline.config = config;
 
@@ -18,7 +18,66 @@
 		var minYear, maxYear;
 
 		var $container = $(containerNode),
-			$el, $sliderWrapper, $slider, $sliderLabel, $sliderInput, $startYear, $endYear;
+			$el, $sliderWrapper, $slider, $sliderLabel, $sliderInput, $minYear, $maxYear,
+			$startYearMarker, $endYearMarker;
+
+		var dragTarget;
+
+		function onMousedown(evt) {
+			var $marker = $(evt.target).closest('.timeline-marker');
+
+			if (!$marker.length)
+				dragTarget = 'range';
+			else if ($marker.is('.start'))
+				dragTarget = 'start';
+			else if ($marker.is('.end'))
+				dragTarget = 'end';	
+
+
+			$(window).one("mouseup", onMouseup);
+			$(window).on("mousemove.timeline", onMousemove);
+			onMousemove(evt); // To allow clicking as well as dragging
+		}
+
+		function onMouseup(evt) {
+			dragTarget = null;
+			$(window).off("touchend.timeline");
+			$(window).off("mousemove.timeline");
+		}
+
+		function onMousemove(evt) {
+			var pageX = evt.pageX || evt.originalEvent.touches[0].pageX,
+				xPos = pageX - $slider.offset().left*(owid.features.zoom && chart.scale > 1 ? chart.scale : 1),
+				fracWidth = xPos / ($slider.width()*chart.scale),
+				targetYear = minYear + fracWidth*(maxYear-minYear);
+
+			targetYear = Math.max(minYear, Math.min(maxYear, targetYear));
+
+			if (dragTarget == 'start') {
+				if (targetYear > config.endYear)
+					config.startYear = config.endYear;
+				else
+					config.startYear = targetYear;
+			} else if (dragTarget == 'end') {
+				if (targetYear < config.startYear)
+					config.endYear = config.startYear;
+				else
+					config.endYear = targetYear;
+			} else if (dragTarget == 'range') {
+				var centerYear = config.startYear + (config.endYear-config.startYear)/2,
+					diff = targetYear-centerYear;
+
+				if (config.startYear+diff < minYear)
+					diff = minYear-config.startYear;
+				if (config.endYear+diff > maxYear)
+					diff = maxYear-config.endYear;
+
+				config.startYear += diff;
+				config.endYear += diff;
+			}
+
+			timeline.render();
+		}
 
 		function initialize() {
 			if ($el && $el.length !== 0) return;
@@ -26,12 +85,15 @@
 			$el = chart.$(".timeline").clone();
 			timeline.$el = $el;
 			$container.append($el);
-			$sliderWrapper = $el.find(".timeline-wrapper");
 			$slider = $el.find(".timeline-slider");
 			$sliderLabel = $slider.find(".timeline-slider-label");
-			$sliderInput = $sliderWrapper.find("[type='range']");
-			$startYear = $el.find(".timeline-start-year");
-			$endYear = $el.find(".timeline-end-year");
+			$minYear = $el.find(".timeline-min-year");
+			$maxYear = $el.find(".timeline-max-year");
+
+			$startYearMarker = $el.find(".timeline-marker.start");
+			$endYearMarker = $el.find(".timeline-marker.end");
+
+			$el.off('mousedown').on('mousedown', onMousedown);
 		}
 
 		timeline.node = function() {
@@ -47,29 +109,28 @@
 				minYear = _.first(config.years);
 				maxYear = _.last(config.years);
 
-				$startYear.text(owid.displayYear(minYear));
-				$endYear.text(owid.displayYear(maxYear));
+				$minYear.text(owid.displayYear(minYear));
+				$maxYear.text(owid.displayYear(maxYear));
 
 				if (owid.displayYear(minYear).length > 4) 
-					$startYear.css('font-size', '10px');
+					$minYear.css('font-size', '10px');
 				else
-					$startYear.css('font-size', "");
+					$minYear.css('font-size', "");
 
 				if (owid.displayYear(maxYear).length > 4) 
-					$endYear.css('font-size', '10px');
+					$maxYear.css('font-size', '10px');
 				else
-					$endYear.css('font-size', "");
-				
-				$sliderInput.attr("min", minYear);
-				$sliderInput.attr("max", maxYear);				
-
-				if (minYear == maxYear) {
-					$sliderInput.prop("disabled", true);
-				} else {
-					$sliderInput.prop("disabled", false);
-				}
+					$maxYear.css('font-size', "");
 			}
-			
+		
+			var startYear = config.startYear, endYear = config.endYear;
+
+			var startYearFrac = (startYear-minYear)/(maxYear-minYear);	
+			$startYearMarker.css('left', 'calc(' + (startYearFrac*100) + '% - 0.5em)');
+			var endYearFrac = (endYear-minYear)/(maxYear-minYear);	
+			$endYearMarker.css('left', 'calc(' + (endYearFrac*100) + '% - 0.5em)');
+
+
 			changes.done();
 		};
 
@@ -91,45 +152,11 @@
 			this.listenTo(App.MapModel, "change:targetYear", this.onChangeYear.bind(this));
 		},
 
-		onMousedown: function(evt) {
-			this.isDragging = true;
-			$(window).one("mouseup", this.onMouseup.bind(this));
-			$(window).on("mousemove.timeline", this.onMousemove.bind(this));
-			this.onMousemove(evt);
-		},
-
 		onTouchstart: function(evt) {
 			this.isDragging = true;
 			$(window).one("touchend", this.onMouseup.bind(this));
 			$(window).on("touchmove.timeline", this.onMousemove.bind(this));
 			this.onMousemove(evt);			
-		},
-
-		onMouseup: function() {
-			this.isDragging = false;
-			$(window).off("touchend.timeline");
-			$(window).off("mousemove.timeline");
-		},
-
-		onMousemove: function(evt) {
-			if (!this.isDragging) return;
-			evt.preventDefault();
-
-			var pageX = evt.pageX || evt.originalEvent.touches[0].pageX,
-				xPos = pageX - this.$sliderInput.offset().left*(owid.features.zoom && chart.scale > 1 ? chart.scale : 1),
-				fracWidth = xPos / (this.$sliderInput.width()*chart.scale),
-				targetYear = this.minYear + fracWidth*(this.maxYear-this.minYear);
-
-			this.setTargetYear(targetYear);
-		},
-
-		setTargetYear: function(targetYear) {
-			// Find the closest year that is a valid selection
-			var closestYear = _.min(this.years, function(year) {
-				return Math.abs(year-targetYear);
-			});
-
-			App.MapModel.set("targetYear", closestYear);			
 		},
 
 		render: function() {
