@@ -5,15 +5,17 @@
 	owid.view.timeline = function(chart, containerNode) {
 		var timeline = {};
 
-		var config = {
+		var state = {
 			years: [1900, 1920, 1940, 2000], // Series of selectable years
 			startYear: 1960, // Selected start year for range
 			endYear: 1980 // Selected end year for range
 		};
-		timeline.config = config;
+		timeline.state = state;
+
+		timeline.dispatch = d3.dispatch('change');
 
 		var changes = owid.changes();
-		changes.track(config);
+		changes.track(state);
 
 		var minYear, maxYear;
 
@@ -54,28 +56,29 @@
 			targetYear = Math.max(minYear, Math.min(maxYear, targetYear));
 
 			if (dragTarget == 'start') {
-				if (targetYear > config.endYear)
-					config.startYear = config.endYear;
+				if (targetYear > state.endYear)
+					state.startYear = state.endYear;
 				else
-					config.startYear = targetYear;
+					state.startYear = targetYear;
 			} else if (dragTarget == 'end') {
-				if (targetYear < config.startYear)
-					config.endYear = config.startYear;
+				if (targetYear < state.startYear)
+					state.endYear = state.startYear;
 				else
-					config.endYear = targetYear;
+					state.endYear = targetYear;
 			} else if (dragTarget == 'range') {
-				var centerYear = config.startYear + (config.endYear-config.startYear)/2,
+				var centerYear = state.startYear + (state.endYear-state.startYear)/2,
 					diff = targetYear-centerYear;
 
-				if (config.startYear+diff < minYear)
-					diff = minYear-config.startYear;
-				if (config.endYear+diff > maxYear)
-					diff = maxYear-config.endYear;
+				if (state.startYear+diff < minYear)
+					diff = minYear-state.startYear;
+				if (state.endYear+diff > maxYear)
+					diff = maxYear-state.endYear;
 
-				config.startYear += diff;
-				config.endYear += diff;
+				state.startYear += diff;
+				state.endYear += diff;
 			}
 
+			timeline.dispatch.change();
 			timeline.render();
 		}
 
@@ -96,6 +99,13 @@
 			$el.off('mousedown').on('mousedown', onMousedown);
 		}
 
+		// Find closest year in configured points to any given year
+		function getClosestYear(targetYear) {
+            return _.min(state.years, function(year) {
+                return Math.abs(year-targetYear);
+            });
+		}
+
 		timeline.node = function() {
 			return $el.get(0);
 		};
@@ -106,8 +116,8 @@
 			initialize();
 
 			if (changes.any('years')) {
-				minYear = _.first(config.years);
-				maxYear = _.last(config.years);
+				minYear = _.first(state.years);
+				maxYear = _.last(state.years);
 
 				$minYear.text(owid.displayYear(minYear));
 				$maxYear.text(owid.displayYear(maxYear));
@@ -123,7 +133,7 @@
 					$maxYear.css('font-size', "");
 			}
 		
-			var startYear = config.startYear, endYear = config.endYear;
+			var startYear = getClosestYear(state.startYear), endYear = getClosestYear(state.endYear);
 
 			var startYearFrac = (startYear-minYear)/(maxYear-minYear);	
 			$startYearMarker.css('left', 'calc(' + (startYearFrac*100) + '% - 0.5em)');

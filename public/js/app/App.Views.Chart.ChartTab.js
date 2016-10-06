@@ -498,8 +498,33 @@
 			}			
 		}
 
-		function renderTimeline() {
+		function renderTimeline() {			
+			if (changes.any('chart-dimensions chart-time')) {
+				var minYear = chart.vardata.get("minYear"),
+					maxYear = chart.vardata.get("maxYear"),
+					chartTime = chart.model.get('chart-time');
+
+				var years = [];
+				for (var i = minYear; i <= maxYear; i++) {
+					years.push(i);
+				}
+				timeline.state.years = years;
+
+				if (!_.isEmpty(chartTime)) {
+					timeline.state.startYear = chartTime[0];
+					timeline.state.endYear = chartTime[1];			
+				} else {
+					timeline.state.startYear = minYear;
+					timeline.state.endYear = maxYear;
+				}
+			}
+
 			timeline.render();
+
+			timeline.dispatch.on('change', function() {
+				chart.model.set('chart-time', [timeline.state.startYear, timeline.state.endYear]);
+			});
+
 			chartHeight -= chart.getBounds(timeline.node()).height + 10;
 		}
 

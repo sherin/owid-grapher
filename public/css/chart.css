@@ -867,11 +867,17 @@ select.disabled {
     align-items: center;
 }
 
+#chart .timeline .timeline-min-year,
+#chart .timeline .timeline-max-year {
+    padding: .3em .5em;
+}
+
 #chart .timeline .timeline-slider {
     background: #d5d5d5;
     flex-grow: 1;
     height: 1.4em;
     position: relative;
+    margin: 0 0.5em;
 }
 
 #chart .timeline .timeline-marker {
