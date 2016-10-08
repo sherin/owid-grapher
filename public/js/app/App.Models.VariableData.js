@@ -79,11 +79,6 @@
 				}
 			});
 
-			// We calculate some basic metadata that is likely to be useful to everyone
-			var startYears = _.map(variableData.variables, function(v) { return _.first(v.years); });
-			var endYears = _.map(variableData.variables, function(v) { return _.last(v.years); });
-			var minYear = _.min(startYears);
-			var maxYear = _.max(endYears);
 
 			// For each variable, standardize the data and separate out any non-numeric
 			_.each(variableData.variables, function(variable) {
@@ -105,11 +100,17 @@
 				variable.hasCategoricalValues = !_.isEmpty(variable.categoricalValues);
 				variable.hasNumericValues = !_.isEmpty(variable.numericValues);
 				variable.minValue = _.min(variable.numericValues);
-				variable.maxValue = _.max(variable.numericValues);
+				variable.maxValue = _.max(variable.numericValues);				
+				variable.uniqueYears = _.uniq(variable.years);
 
 				// legacy
 				variable.isNumeric = variable.hasNumericValues && !variable.hasCategoricalValues;
 			});
+
+			// Calculate some cross-variable metadata
+			var yearsWithAnyData = _.sortBy(_.union.apply(_, _.pluck(variableData.variables, 'uniqueYears')));
+			var minYear = _.min(yearsWithAnyData);
+			var maxYear = _.max(yearsWithAnyData);
 
 			// Slap the ids onto the entities
 			_.each(variableData.entityKey, function(entity, id) {
@@ -117,7 +118,7 @@
 			});
 
 			this.isReady = true;
-			this.set(_.extend(variableData, { minYear: minYear, maxYear: maxYear, availableEntities: _.values(variableData.entityKey) }));
+			this.set(_.extend(variableData, { minYear: minYear, maxYear: maxYear, yearsWithAnyData: yearsWithAnyData, availableEntities: _.values(variableData.entityKey) }));
 			this.validateEntities();
 		},
 

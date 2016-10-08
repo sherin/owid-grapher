@@ -251,7 +251,6 @@
 				chart.dispatch.renderEnd();
 			});
 
-
 			changes.done();
 
 			if (!this.postInit) {

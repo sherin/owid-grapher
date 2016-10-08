@@ -98,6 +98,13 @@ body.chart-container {
     -webkit-user-select: none;
     user-select: none;
 }
+.noselect {
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;    
+}
 input[type=checkbox] {
     cursor: pointer;
 }
@@ -860,6 +867,7 @@ select.disabled {
 #chart .timeline .pause-btn {
     display: none;
     position: relative;
+
 }
 
 #chart .timeline {
@@ -870,23 +878,47 @@ select.disabled {
 #chart .timeline .timeline-min-year,
 #chart .timeline .timeline-max-year {
     padding: .3em .5em;
+    margin: .5em;
+}
+
+#chart .timeline.min-active .timeline-min-year,
+#chart .timeline.max-active .timeline-max-year {
+    background-color: #404040;
+    color: #fff;
 }
 
 #chart .timeline .timeline-slider {
     background: #d5d5d5;
     flex-grow: 1;
-    height: 1.4em;
+    height: 1em;
     position: relative;
     margin: 0 0.5em;
 }
 
 #chart .timeline .timeline-marker {
-    width: 1em;
-    height: 2em;
+    width: .5em;
+    height: 100%;
     background: black;
     position: absolute;
     left: 0%;
     cursor: ew-resize;
+}
+
+#chart .timeline .timeline-label {
+    position: absolute;
+    text-align: center;
+    top: -1.5em;
+    background-color: #404040;
+    color: #fff;
+    cursor: pointer;    
+    padding: .3em .8em;
+    z-index: 1;    
+}
+
+#chart .timeline .timeline-range {
+    position: absolute;
+    background: green;
+    height: 100%;
 }
 
 /* Export

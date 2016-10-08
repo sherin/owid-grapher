@@ -19,9 +19,13 @@
 
 		var minYear, maxYear;
 
+		// The raw calculated values from the slider input which may not correspond to an actual year
+		// We keep these around in order to keep the range distance consistent while moving
+		var startInputYear, endInputYear;
+
 		var $container = $(containerNode),
 			$el, $sliderWrapper, $slider, $sliderLabel, $sliderInput, $minYear, $maxYear,
-			$startYearMarker, $endYearMarker;
+			$startYearMarker, $endYearMarker, $startYearLabel, $endYearLabel, $rangeMarker;
 
 		var dragTarget;
 
@@ -48,35 +52,44 @@
 		}
 
 		function onMousemove(evt) {
+			evt.preventDefault();
+
 			var pageX = evt.pageX || evt.originalEvent.touches[0].pageX,
 				xPos = pageX - $slider.offset().left*(owid.features.zoom && chart.scale > 1 ? chart.scale : 1),
 				fracWidth = xPos / ($slider.width()*chart.scale),
-				targetYear = minYear + fracWidth*(maxYear-minYear);
+				inputYear = minYear + fracWidth*(maxYear-minYear);
 
-			targetYear = Math.max(minYear, Math.min(maxYear, targetYear));
+			inputYear = Math.max(minYear, Math.min(maxYear, inputYear));
 
 			if (dragTarget == 'start') {
-				if (targetYear > state.endYear)
-					state.startYear = state.endYear;
+				if (inputYear > endInputYear)
+					startInputYear = state.endYear;
 				else
-					state.startYear = targetYear;
+					startInputYear = inputYear;
 			} else if (dragTarget == 'end') {
-				if (targetYear < state.startYear)
-					state.endYear = state.startYear;
+				if (inputYear < state.startYear)
+					endInputYear = state.startYear;
 				else
-					state.endYear = targetYear;
+					endInputYear = inputYear;
 			} else if (dragTarget == 'range') {
-				var centerYear = state.startYear + (state.endYear-state.startYear)/2,
-					diff = targetYear-centerYear;
+				var centerYear = startInputYear + (endInputYear-startInputYear)/2,
+					diff = inputYear-centerYear;
 
-				if (state.startYear+diff < minYear)
-					diff = minYear-state.startYear;
-				if (state.endYear+diff > maxYear)
-					diff = maxYear-state.endYear;
+				if (startInputYear+diff < minYear)
+					diff = minYear-startInputYear;
+				if (endInputYear+diff > maxYear)
+					diff = maxYear-endInputYear;
 
-				state.startYear += diff;
-				state.endYear += diff;
+				startInputYear += diff;
+				endInputYear += diff;
 			}
+
+			state.startYear = getClosestYear(startInputYear);
+			state.endYear = getClosestYear(endInputYear);
+
+			// Lock to a single year
+			if (state.startYear == state.endYear && dragTarget != 'range')
+				startInputYear = endInputYear;
 
 			timeline.dispatch.change();
 			timeline.render();
@@ -94,7 +107,13 @@
 			$maxYear = $el.find(".timeline-max-year");
 
 			$startYearMarker = $el.find(".timeline-marker.start");
+			$startYearLabel = $startYearMarker.find('.timeline-label');
 			$endYearMarker = $el.find(".timeline-marker.end");
+			$endYearLabel = $endYearMarker.find('.timeline-label');
+			$rangeMarker = $el.find(".timeline-range");
+
+			startInputYear = state.startYear;
+			endInputYear = state.endYear;
 
 			$el.off('mousedown').on('mousedown', onMousedown);
 		}
@@ -132,14 +151,23 @@
 				else
 					$maxYear.css('font-size', "");
 			}
-		
-			var startYear = getClosestYear(state.startYear), endYear = getClosestYear(state.endYear);
+	
+			if (changes.any('startYear endYear')) {
+				var startYear = getClosestYear(state.startYear), endYear = getClosestYear(state.endYear);
+				$el.toggleClass('min-active', startYear == minYear);
+				$el.toggleClass('max-active', endYear == maxYear);
 
-			var startYearFrac = (startYear-minYear)/(maxYear-minYear);	
-			$startYearMarker.css('left', 'calc(' + (startYearFrac*100) + '% - 0.5em)');
-			var endYearFrac = (endYear-minYear)/(maxYear-minYear);	
-			$endYearMarker.css('left', 'calc(' + (endYearFrac*100) + '% - 0.5em)');
+				var startYearFrac = (startYear-minYear)/(maxYear-minYear);	
+				$startYearMarker.css('left', 'calc(' + (startYearFrac*100) + '% - 0.5em)');
+				var endYearFrac = (endYear-minYear)/(maxYear-minYear);	
+				$endYearMarker.css('left', 'calc(' + (endYearFrac*100) + '% - 0.5em)');
 
+				$rangeMarker.css('left', (startYearFrac*100) + '%');
+				$rangeMarker.css('width', (endYearFrac-startYearFrac)*100 + '%');
+
+				$startYearLabel.text(startYear);
+				$endYearLabel.text(endYear);
+			}	
 
 			changes.done();
 		};
@@ -222,7 +250,7 @@
 			this.setTargetYear(nextYear);
 		},
 
-/*		createTicks: function( $input ) {
+		createTicks: function( $input ) {
 			if( this.$el.find( ".timeline-ticks" ).length ) {
 				//this.$el.find(".timeline-ticks").remove();
 				//already has ticks, bail
@@ -252,7 +280,6 @@
 
 		hide: function() {
 			this.$el.css( "display", "none" );
-		}*/
-
+		}
 	});
 })();

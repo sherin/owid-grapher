@@ -13,7 +13,7 @@
 			this.dispatcher = options.dispatcher;
 
 			this.playPauseControl = this.addChild(PlayPauseControl, options);
-			this.timelineControl = this.addChild(TimelineControl, options);
+			//this.timelineControl = this.addChild(TimelineControl, options);
 			this.buttonsControl = this.addChild(ButtonsControl, options);
 
 			this.listenTo(App.MapModel, "change", this.render.bind(this));			
@@ -25,7 +25,7 @@
 				maxYear = App.MapModel.getMaxYear();
 
 			this.playPauseControl.render();
-			this.timelineControl.render();
+			//this.timelineControl.render();
 			this.buttonsControl.render();
 
 			//depending on the mode used display timeline mode or buttons mode
@@ -35,7 +35,7 @@
 				this.buttonsControl.show();
 			} else {
 				this.playPauseControl.show();
-				this.timelineControl.show();
+				//this.timelineControl.show();
 				this.buttonsControl.hide();
 			}
 

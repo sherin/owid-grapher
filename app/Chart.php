@@ -134,6 +134,7 @@ class Chart extends Model {
 		$phantomjs = base_path() . "/phantomjs/phantomjs";
 		$rasterize = base_path() . "/phantomjs/rasterize.js";
 		$target = \Request::root() . "/" . $slug . ".export" . "?" . $query;
+		Log::info($query);
 		$queryHash = hash('md5', $query);
 		$file = public_path() . "/exports/" . $slug . "-" . $queryHash . ".png";
 		$tmpfile = $file . "#tmp";

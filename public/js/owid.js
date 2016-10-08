@@ -73,7 +73,6 @@
 			timeRanges = [{ startYear: 'first', endYear: 'last' }];
 		}
 
-
 		var outputYears = [];
 		if (!isFinite(first) || !isFinite(last))
 			return outputYears;

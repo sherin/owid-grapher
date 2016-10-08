@@ -6,7 +6,7 @@
 	// all of our svg stuff
 	nv.utils.noData = function(nvd3, container) {
 	    container.selectAll('g.nv-wrap').remove();
-	    App.ChartView.handleMissingData("No data available.");
+	    chart.showMessage("No data available.");
 	};
 
 	owid.tab.chart = function(chart) {
@@ -498,25 +498,25 @@
 			}			
 		}
 
-		function renderTimeline() {			
-			if (changes.any('chart-dimensions chart-time')) {
-				var minYear = chart.vardata.get("minYear"),
-					maxYear = chart.vardata.get("maxYear"),
-					chartTime = chart.model.get('chart-time');
+		function renderTimeline() {	
+			if (!changes.any('chart-dimensions chart-time')) return;
 
-				var years = [];
-				for (var i = minYear; i <= maxYear; i++) {
-					years.push(i);
-				}
-				timeline.state.years = years;
+			var years;
+//			if (chartType == App.ChartType.ScatterPlot)
+				years = chart.vardata.get('yearsWithAnyData');
+//			else
+//				years = chart.vardata.get('yearsWithAnyData');
+			
+			var chartTime = chart.model.get('chart-time');
 
-				if (!_.isEmpty(chartTime)) {
-					timeline.state.startYear = chartTime[0];
-					timeline.state.endYear = chartTime[1];			
-				} else {
-					timeline.state.startYear = minYear;
-					timeline.state.endYear = maxYear;
-				}
+			console.log(years);
+			timeline.state.years = years;
+			if (!_.isEmpty(chartTime)) {
+				timeline.state.startYear = chartTime[0];
+				timeline.state.endYear = chartTime[1];			
+			} else {
+				timeline.state.startYear = years[0];
+				timeline.state.endYear = years[years.length-1];
 			}
 
 			timeline.render();

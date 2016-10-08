@@ -147,15 +147,20 @@
 						</div>
 					</div>
 				</div>
-				<div class="timeline">
+				<div class="timeline noselect">
 					<div class="play-pause-control control">
 						<a class="play-btn btn"><i class="fa fa-play-circle-o"></i></a>
 						<a class="pause-btn btn"><i class="fa fa-pause-circle-o"></i></a>
 					</div>
 					<div class="timeline-min-year">1950</div>
 					<div class="timeline-slider">
-						<div class="timeline-marker start"></div>
-						<div class="timeline-marker end"></div>
+						<div class="timeline-marker start">
+							<div class="timeline-label">1950</div>
+						</div>
+						<div class="timeline-range"></div>
+						<div class="timeline-marker end">
+							<div class="timeline-label">2000</div>
+						</div>
 <!--						<span class="timeline-slider-label">1980</span>-->
 					</div>
 					<div class="timeline-max-year">2000</div>
