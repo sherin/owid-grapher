@@ -300,7 +300,7 @@
 
 					// All good, put the data in. Note that a scatter plot only has one value per entity.
 					var datum = series.values[0];
-					datum[dimension.property] = parseFloat(value);
+					datum[dimension.property] = value;
 					datum.time[dimension.property] = year;
 				}
 			}.bind(this));

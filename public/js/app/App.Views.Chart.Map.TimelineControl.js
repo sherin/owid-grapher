@@ -39,6 +39,8 @@
 			else if ($marker.is('.end'))
 				dragTarget = 'end';	
 
+			// boop
+			dragTarget = 'range';
 
 			$(window).one("mouseup", onMouseup);
 			$(window).on("mousemove.timeline", onMousemove);

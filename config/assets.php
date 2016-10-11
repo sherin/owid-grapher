@@ -175,6 +175,7 @@ return [
 		        'app/owid.view.tabSelector.js',
 		        'app/owid.view.tooltip.js',
 		        'app/owid.view.scaleSelectors.js',
+		        'app/owid.view.scatter.js',
 		        'app/App.Views.Chart.Legend.js',
 		        'app/App.Views.Chart.ChartTab.js',
 		        'app/App.Views.Chart.DataTab.js',
