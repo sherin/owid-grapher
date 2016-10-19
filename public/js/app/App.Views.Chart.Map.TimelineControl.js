@@ -39,9 +39,6 @@
 			else if ($marker.is('.end'))
 				dragTarget = 'end';	
 
-			// boop
-			dragTarget = 'range';
-
 			$(window).one("mouseup", onMouseup);
 			$(window).on("mousemove.timeline", onMousemove);
 			onMousemove(evt); // To allow clicking as well as dragging

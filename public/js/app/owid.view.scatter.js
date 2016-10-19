@@ -1,4 +1,4 @@
-;(function() {
+;(function(d3) {
 	"use strict";
 	owid.namespace("owid.view.scatter");
 
@@ -13,7 +13,7 @@
 		var changes = owid.changes();
 		changes.track(state);
 
-		var margin, width, height, svg, x, y, color, xAxis, yAxis;
+		var margin, width, height, svg, x, y, xAxis, yAxis;
 
 		function initialize() {
 			if (svg) svg.remove();
@@ -22,25 +22,28 @@
 		    width = state.bounds.width - margin.right;
 		    height = state.bounds.height - margin.bottom;
 
-			x = d3.scale.linear()
-			    .range([0, width]);
+			x = d3.scaleLinear().range([0, width]);
 
-			y = d3.scale.linear()
-			    .range([height, 0]);
+			y = d3.scaleLinear().range([height, 0]);
 
 
-			x.domain(d3.extent(state.data, function(d) { return d.values[0].x; })).nice();
-			y.domain(d3.extent(state.data, function(d) { return d.values[0].y; })).nice();
+  		    x.domain([
+		        d3.min(state.data, function(series) { return d3.min(series.values, function(d) { return d.x; }); }),
+		        d3.max(state.data, function(series) { return d3.max(series.values, function(d) { return d.x; }); })
+		    ]);
 
-			color = d3.scale.category10();
+  		    y.domain([
+		        d3.min(state.data, function(series) { return d3.min(series.values, function(d) { return d.y; }); }),
+		        d3.max(state.data, function(series) { return d3.max(series.values, function(d) { return d.y; }); })
+		    ]);
 
-			xAxis = d3.svg.axis()
+/*			xAxis = d3.svg.axis()
 			    .scale(x)
 			    .orient("bottom");
 
 			yAxis = d3.svg.axis()
 			    .scale(y)
-			    .orient("left");
+			    .orient("left");*/
 
 			svg = d3.select("svg")
 			  .append("g")
@@ -67,6 +70,19 @@
 			  .attr("dy", ".71em")
 			  .style("text-anchor", "end");*/
 			  //.text("Sepal Length (cm)");
+
+			svg.append("svg:defs").selectAll("marker")
+				.data(["arrowhead"])
+		        .enter().append("svg:marker")
+		        .attr("id", String)
+		        .attr("viewBox", "0 -5 10 10")
+		        .attr("refX", 5)
+		        .attr("refY", 0)
+		        .attr("markerWidth", 4)
+		        .attr("markerHeight", 4)
+		        .attr("orient", "auto")
+		        .append("svg:path")
+		        .attr("d", "M0,-5L10,0L0,5");
 		}
 
 		scatter.render = function() {
@@ -74,39 +90,34 @@
 
 			if (changes.any('bounds')) initialize();
 
-			x.domain(d3.extent(state.data, function(d) { return d.values[0].x; })).nice();
-			y.domain(d3.extent(state.data, function(d) { return d.values[0].y; })).nice();
+  		    x.domain([
+		        d3.min(state.data, function(series) { return d3.min(series.values, function(d) { return d.x; }); }),
+		        d3.max(state.data, function(series) { return d3.max(series.values, function(d) { return d.x; }); })
+		    ]);
 
-			console.log(state.data.length);
+  		    y.domain([
+		        d3.min(state.data, function(series) { return d3.min(series.values, function(d) { return d.y; }); }),
+		        d3.max(state.data, function(series) { return d3.max(series.values, function(d) { return d.y; }); })
+		    ]);
 
-			var dots = svg.selectAll(".dot")
-			  .data(state.data);
+			svg.selectAll(".entity").remove();
 
-			dots.transition()
-			  .duration(500)
-			  .attr("cx", function(d) { return x(d.values[0].x); })
-	   	      .attr("cy", function(d) { return y(d.values[0].y); })
-	   	      .attr("r", function(d) { return Math.random()*10; })
-	   	      .attr("fill", function(d) { return d3.rgb(Math.random()*255, Math.random()*255, Math.random()*255); });
+			var line = d3.line()
+			    .curve(d3.curveBasisOpen)
+			    .x(function(d) { return x(d.x); })
+			    .y(function(d) { return y(d.y); });
 
-			dots.enter().append("circle")
-			    .attr("class", "dot")
-			    .attr("r", 3.5)
-			  .attr("cx", function(d) { return x(d.values[0].x); })
-			    .attr("cy", function(d) { return y(d.values[0].y); });
+			var entities = svg.selectAll(".entity")
+				.data(state.data)
+				.enter().append("g")
+					.attr("class", "entity");
 
-			dots.exit().remove();
-
-
-/*            svg.select(".x.axis")
-                .transition()
-                .duration(1000)
-                .call(xAxis);
-
-			svg.select(".y.axis")
-			    .transition()
-			    .duration(1000)
-			    .call(yAxis);*/
+			entities.append("path")
+				.attr("class", "line")
+				.attr("d", function(d) { return line(d.values); })
+				.style("fill", "#ffffff")
+				.style("stroke", "#000000")
+			    .attr("marker-end", "url(#arrowhead)");
 
 			changes.done();
 		};
@@ -114,4 +125,4 @@
 		return scatter;
 	};
 
-})();
+})(d3v4);

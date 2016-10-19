@@ -243,11 +243,10 @@
 				timeFrom = App.ChartModel.getTimeFrom(),
 				timeTo = App.ChartModel.getTimeTo(),
 				seriesByEntity = {},
-				// e.g. for colors { var_id: { 'Oceania': '#ff00aa' } }
-				categoryTransforms = {},				
 				chartData = [], legendData = [];
 
-			var latestYearInData = _.max(_.map(variables, function(v) { return _.max(v.years); }));
+			if (_.isFinite(timeFrom) && _.isFinite(timeTo))
+				return this.transformDataForConnectedScatter();
 
 			_.each(dimensions, function(dimension) {
 				var variable = variables[dimension.variableId],
@@ -255,18 +254,14 @@
 				    tolerance = parseInt(dimension.tolerance),
 				    maximumAge = parseInt(dimension.maximumAge),
 				    isCategorical = _.include(['color', 'shape'], dimension.property),
-				    categoryTransform = categoryTransforms[variable.id];
-
-				if (isCategorical && !categoryTransform) {
-					categoryTransform = this.makeCategoryTransform(dimension.property, variable.values);
-				}
+				    categoryTransform = isCategorical && this.makeCategoryTransform(dimension.property, variable.values);
 
 				for (var i = 0; i < variable.years.length; i++) {
 					var year = parseInt(variable.years[i]),
 						value = variable.values[i],
 						entityId = variable.entities[i],
 						entity = selectedEntitiesById[entityId],
-						series = seriesByEntity[entityId];						
+						series = seriesByEntity[entityId];
 
 					// Scatterplot defaults to showing all countries if none selected
 					if (!_.isEmpty(selectedEntitiesById) && !entity) continue;
@@ -327,6 +322,97 @@
 			});
 
 			return { chartData: chartData, minYear: minYear, maxYear: maxYear };
+		},
+
+		transformDataForConnectedScatter: function() {
+			var dimensions = App.ChartModel.getDimensions(),
+				variables = App.VariableData.get("variables"),
+				entityNameById = App.VariableData.get("entityKey"),
+				selectedEntitiesById = App.ChartModel.getSelectedEntitiesById(),
+				timeFrom = App.ChartModel.getTimeFrom(),
+				timeTo = App.ChartModel.getTimeTo(),
+				seriesByEntity = {},
+				chartData = [], legendData = [];
+
+
+			_.each(dimensions, function(dimension) {
+				var variable = variables[dimension.variableId],
+				    tolerance = parseInt(dimension.tolerance),
+				    maximumAge = parseInt(dimension.maximumAge),
+				    isCategorical = _.include(['color', 'shape'], dimension.property),
+				    categoryTransform = isCategorical && this.makeCategoryTransform(dimension.property, variable.values);
+
+				for (var i = 0; i < variable.years.length; i++) {
+					var year = parseInt(variable.years[i]),
+						value = variable.values[i],
+						entityId = variable.entities[i],
+						entity = selectedEntitiesById[entityId],
+						series = seriesByEntity[entityId];
+
+					// Scatterplot defaults to showing all countries if none selected
+					if (!_.isEmpty(selectedEntitiesById) && !entity) continue;
+
+					if (!series) {
+						series = {
+							values: [],
+							valuesByYear: {},
+							key: entityNameById[entityId].name,
+							entityName: entityNameById[entityId].name,
+							entityId: entityId,
+							variableId: dimension.variableId,
+							id: entityId
+						};
+						seriesByEntity[entityId] = series;
+					}
+
+					// Categorical data like color or shape just goes straight on the series
+					if (isCategorical) {
+						series[dimension.property] = categoryTransform[value];
+						continue;
+					}
+
+					// Not within target year range, ignore
+					if (year < timeFrom || year > timeTo)
+						continue;
+
+					var datum = series.valuesByYear[year];
+					if (!datum) {
+						datum = { time: {} };
+						series.valuesByYear[year] = datum;
+						series.values.push(datum);
+					}
+
+					datum[dimension.property] = value;
+					datum.time[dimension.property] = year;
+				}
+			}.bind(this));
+
+			// Exclude any years which are incomplete (lacking data for one or more variables)
+			_.each(seriesByEntity, function(series) {
+				series.values = _.filter(series.values, function(value) {
+					return _.every(dimensions, function(dim) {
+						return dim.property == "color" || value.hasOwnProperty(dim.property);
+					});
+				});
+
+				if (!_.isEmpty(series.values))
+					chartData.push(series);
+			}.bind(this));
+
+/*
+			legendData = _.map(chartData, function(series) {
+				return { label: series.key, key: series.key, entityId: series.entityId, variableId: series.variableId };
+			});*/
+
+			return { chartData: chartData };
+/*			[
+				{ values: [
+					{ time: { x: 1990, y: 1990 }, x: 31.2, y: 34.3 },
+					{ time: { x: 1991, y: 1991 }, x: 34.2, y: 35.3 }
+
+				  ], 
+				}
+			]*/
 		},
 
 

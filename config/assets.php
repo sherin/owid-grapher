@@ -146,6 +146,7 @@ return [
 		        'libs/papaparse.js',
 		        'libs/d3.js',
 		        'libs/nv.d3.js',
+		        'libs/d3.v4.js',
 		        'libs/saveSvgAsPng.js',
 		        'libs/topojson.js',
 		        'libs/datamaps.js',
