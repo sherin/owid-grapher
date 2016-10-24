@@ -480,7 +480,7 @@
 					} else if (chartType == App.ChartType.DiscreteBar) {
 						return d;
 					} else {
-						return App.Utils.formatTimeLabel("Year", d, xAxisPrefix, xAxisSuffix, xAxisFormat );
+						return App.Utils.formatTimeLabel("Year", d, xAxisPrefix, xAxisSuffix, xAxisFormat);
 					}
 				});
 

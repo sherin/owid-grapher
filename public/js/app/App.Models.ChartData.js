@@ -399,6 +399,11 @@
 					chartData.push(series);
 			}.bind(this));
 
+			// Sort by size. Ensures larger countries will be drawn on top.
+			chartData = _.sortBy(chartData, function(series) {
+				return _.last(series.values).size;
+			});
+
 /*
 			legendData = _.map(chartData, function(series) {
 				return { label: series.key, key: series.key, entityId: series.entityId, variableId: series.variableId };
