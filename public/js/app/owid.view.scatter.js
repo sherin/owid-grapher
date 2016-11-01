@@ -7,13 +7,15 @@
 
 		var state = {
 			data: [],
-			bounds: {}
+			bounds: { left: 0, top: 0, right: 100, bottom: 100 },
+			focus: null
 		};
+
 		scatter.state = state;
 		var changes = owid.changes();
 		changes.track(state);
 
-		var margin, width, height, svg, x, y, sizeScale, fontScale, xAxis, yAxis;
+		var margin, width, height, svg, x, y, sizeScale, fontScale, xAxis, yAxis, entities;
 
 		function initialize() {
 			if (svg) svg.remove();
@@ -59,11 +61,8 @@
 
 		}
 
-		scatter.render = function() {
-			if (!changes.start()) return;
-
-			if (changes.any('bounds')) initialize();
-
+		function renderData() {
+			if (!changes.any('data')) return;
 
 			x = d3.scaleLinear().range([0, width]);
 			y = d3.scaleLinear().range([height, 0]);
@@ -95,12 +94,10 @@
 			    .x(function(d) { return x(d.x); })
 			    .y(function(d) { return y(d.y); });
 
-			var update = svg.selectAll(".entity").data(state.data),
+			var update = svg.selectAll(".entity").data(state.data, function(d) { return d.key; }),
 				exit = update.exit().remove(),
-				enter = update.enter().append("g").attr("class", "entity"),
-				entities = enter.merge(update);
-
-			entities.style("stroke", function(d) { return d.color; });
+				enter = update.enter().append("g").attr("class", "entity");
+			entities = enter.merge(update);
 
 			var markers = enter.append("svg:marker")
 		        .attr("stroke", "rgba(0,0,0,0)")
@@ -124,17 +121,21 @@
 				.attr("class", "line")
 				.style("fill-opacity", 0)
 			  .merge(lineUpdate)
+			  	.transition()
 				.attr("d", function(d) { return line([d.values[0], _.last(d.values)]); })				
 			    .attr("marker-end", function(d) { return "url(#" + d.id + ")"; })			    
-				.style("stroke-width", function(d) { console.log(_.last(d.values).size); return sizeScale(_.last(d.values).size); });
+				.style("stroke", function(d) { return d.color; })
+				.style("stroke-width", function(d) { return sizeScale(_.last(d.values).size); });
 
 			update.exit().remove();
+		}
 
+		function renderLabels() {
+			if (!changes.any('data')) return;
 
-			var label_array = [], anchor_array = [];
-			_.each(state.data, function(series) {
-				var firstValue = _.first(series.values),
-					lastValue = _.last(series.values),
+			var labelUpdate = entities.selectAll(".label").data(function(d) { 
+				var firstValue = _.first(d.values),
+					lastValue = _.last(d.values),
 					xPos = x((lastValue.x+firstValue.x)/2),
 					yPos = y((lastValue.y+firstValue.y)/2),
 					angle = Math.atan2(y(lastValue.y) - y(firstValue.y), x(lastValue.x) - x(firstValue.x)) * 180 / Math.PI;
@@ -143,59 +144,35 @@
 				if (lastValue.x < firstValue.x)
 					angle += 180;
 
-				label_array.push({
+				return [{
 					x: xPos,
 					y: yPos,
 					angle: angle,
-					name: series.entityName,
-					fontSize: fontScale(lastValue.size),
-				});
-
-				anchor_array.push({
-					x: xPos,
-					y: yPos,
-					r: 7
-				});
+					name: d.entityName,
+					key: d.key,
+					fontSize: fontScale(lastValue.size)
+				}];
 			});
 
-
-			svg.selectAll(".label").remove();
-
-	        // Draw labels
-	        var labels = svg.selectAll(".label")
-	            .data(label_array)
-	            .enter()
+			var labels = labelUpdate.enter()
 	            .append("text")
 	            .attr("class", "label")
 	            .attr('text-anchor', 'middle')
+	          .merge(labelUpdate)
 	            .text(function(d) { return d.name; })
+	            .style("font-size", function(d) { return d.fontSize; })   
+	            .style("fill", function(d) { return d.color; })
 	            .attr("x", function(d) { return (d.x); })
 	            .attr("y", function(d) { return (d.y); })	            
-	            .attr("transform", function(d) { return "rotate(" + d.angle + "," + d.x + "," + d.y + ") translate(0, -2)"; })
-	            .style("font-size", function(d) { return d.fontSize; })   
-	            .style("fill", function(d) { return d.color; }); 
+	            .attr("transform", function(d) { return "rotate(" + d.angle + "," + d.x + "," + d.y + ") translate(0, -2)"; });
 
 	        // Size of each label
-	        var index = 0;
-	        labels.each(function() {
-	        	var label = label_array[index],
-	        		anchor = anchor_array[index];
-
-	            label.width = chart.getBounds(this).width;
-	            label.height = chart.getBounds(this).height;
-
-	            index += 1;
+	        var label_array = [];
+	        labels.each(function(d) {
+	            d.width = chart.getBounds(this).width;
+	            d.height = chart.getBounds(this).height;
+	        	label_array.push(d);
 	        });
-
-	        /*svg.selectAll("rect")
-	        	.data(label_array)
-	        	.enter()
-	        	.append("rect")
-	        	.attr("x", function(d) { return d.x; })
-	        	.attr("y", function(d) { return d.y; })
-	        	.attr("width", function(d) { return d.width; })
-	        	.attr("height", function(d) { return d.height; })
-	        	.style("fill", "rgba(255, 0, 0, 0.1)");*/
 
 	        function collide(l1, l2) {
 	        	var r1 = { left: l1.x, top: l1.y, right: l1.x+l1.width, bottom: l1.y+l1.height };
@@ -235,8 +212,52 @@
 		        .duration(0)
 		        .attr("x", function(d) { return (d.x); })
 		        .attr("y", function(d) { return (d.y); })
-		        .style("fill-opacity", function(d) { return d.hidden ? 0 : 1; });
+		        .style("opacity", function(d) { return d.hidden ? 0 : 1; })
+		        .style('cursor', 'pointer');
+		}
 
+
+		function renderFocus() {
+			if (!changes.any('focus')) return;
+
+			d3.select('svg').on("mousemove.scatter", function() {
+				var mouse = d3.mouse(svg.node()),
+					mouseX = mouse[0], mouseY = mouse[1];
+					
+				var d = _.sortBy(state.data, function(d) {
+					var value = d.values[0],
+						dx = x(value.x) - mouseX,
+						dy = y(value.y) - mouseY,
+						dist = dx*dx + dy*dy;
+					console.log(mouseX, mouseY);
+					return dist;
+				})[0];
+
+				state.focus = d.key;
+				scatter.render();
+			});
+
+			entities.style('opacity', function(d) {
+				return (state.focus === null || d.key == state.focus) ? 1 : 0.2;
+			});
+
+			entities.selectAll('.label').style('opacity', function(d) {
+				if (state.focus !== null && d.key == state.focus)
+					return 1;
+				else
+					return (d.hidden ? 0 : 1);
+			});
+		}
+
+
+		scatter.render = function() {
+			if (!changes.start()) return;
+
+			if (changes.any('bounds')) initialize();
+
+			renderData();
+			renderLabels();
+			renderFocus();
 
 			changes.done();
 
