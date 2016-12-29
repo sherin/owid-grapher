@@ -114,7 +114,7 @@ export default function(chart : any) {
         let sourcesStr : string = chart.model.get('sourceDesc')
         if (!sourcesStr) {
             const sources = chart.data.transformDataForSources()
-            const sourceNames : Array<string> = _.uniq(_.pluck(sources, 'name'))
+            const sourceNames : Array<string> = _.uniq(_.map(sources, 'name'))
             sourceNames.forEach((sourceName, i) => {
                  if (i > 0) sourcesStr += ", "
                  sourcesStr += sourceName

@@ -52,7 +52,7 @@
 
         // Set domain for color scale now to get the right ordering
         viz.flow('colorScale, dimensions, variables', function(colorScale, dimensions, variables) {
-            var colorDim = _.findWhere(dimensions, { property: 'color' });
+            var colorDim = _.find(dimensions, { property: 'color' });
             if (!colorDim) return;
 
             var variable = variables[colorDim.variableId];
@@ -208,7 +208,7 @@
 
         // Set domain for color scale now to get the right ordering
         viz.flow('colorScale, dimensions, variables', function(colorScale, dimensions, variables) {
-            var colorDim = _.findWhere(dimensions, { property: 'color' });
+            var colorDim = _.find(dimensions, { property: 'color' });
             if (!colorDim) return;
 
             var variable = variables[colorDim.variableId];

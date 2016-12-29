@@ -185,7 +185,7 @@
 			var variables = !this.isDataMultiVariant ? Utils.mapSingleVariantData(this.uploadedData.rows, App.DatasetModel.get("name")) : Utils.mapMultiVariantData(this.uploadedData.rows);
 
 			// Set defaults for variables from their existing settings
-			var oldVariablesByName = _.indexBy(App.DatasetModel.get("oldVariables"), 'name');
+			var oldVariablesByName = _.keyBy(App.DatasetModel.get("oldVariables"), 'name');
 			_.each(variables, function(variable) {
 				var oldvar = oldVariablesByName[variable.name];
 				if (oldvar) {

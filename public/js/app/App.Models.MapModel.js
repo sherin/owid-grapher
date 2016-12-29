@@ -143,7 +143,7 @@
 			if (variable && variable.isNumeric) {
 				_.each(variable.values, function(value, i) {
 					var year = variable.years[i];
-					if (_.contains(this.years, year)) {
+					if (_.includes(this.years, year)) {
 						var entity = App.VariableData.getEntityById(variable.entities[i]);
 
 						// If there's a World or other meta entity, it can throw off the map calcs

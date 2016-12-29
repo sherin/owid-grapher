@@ -15,8 +15,6 @@
 		},
 
 		initialize: function(options) {
-			this.dispatcher = options.dispatcher;
-			
 			this.$colorSchemeSelect = this.$("[name='map-color-scheme']");
 			this.$numberOfIntervals = this.$("[name='map-color-interval']");
 			this.$colorAutomaticClassification = this.$("[name='map-color-automatic-classification']");

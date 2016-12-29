@@ -69,7 +69,7 @@
 				variable.unit = $inputUnit.val();
 				variable.description = $inputDescription.val();
 
-				var existing = _.findWhere(oldVariables, { name: variable.name });
+				var existing = _.find(oldVariables, { name: variable.name });
 				if (existing) {
 					$selectAction.val(existing.id);
 				}
@@ -100,7 +100,7 @@
 
 			var missingName = false, missingSource = false, nameConflict = false, overwriteConflict = false, existingNameConflict = false;
 
-			var names = {}, overwrites = {}, existingNames = _.indexBy(oldVariables, 'name');			
+			var names = {}, overwrites = {}, existingNames = _.keyBy(oldVariables, 'name');			
 			_.each(newVariables, function(variable) {
 				if (!variable.name) missingName = true;
 				if (!variable.source) missingSource = true;
@@ -133,7 +133,7 @@
 				charts = [];
 
 			_.each(newVariables, function(variable) {
-				var old = _.findWhere(oldVariables, { id: +variable.overwriteId });
+				var old = _.find(oldVariables, { id: +variable.overwriteId });
 				if (old && old.charts)
 					charts = charts.concat(old.charts);
 			});

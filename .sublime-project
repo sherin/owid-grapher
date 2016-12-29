@@ -4,6 +4,7 @@
 		{
 			"path": ".",
             "folder_exclude_patterns": [".git", "tmp", "storage", "phantomjs", "public/exports"],
+            "file_exclude_patterns": ["bundle.js"]
 		}
 	],
 	"settings":

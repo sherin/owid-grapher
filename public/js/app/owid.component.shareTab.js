@@ -122,12 +122,12 @@
 
         shareMenu.flow('pngBtn, baseUrl, queryStr, cacheTag', function(pngBtn, baseUrl, queryStr, cacheTag) {
             var pngHref = baseUrl + '.png' + queryStr, defaultTargetSize = "1200x800";
-            pngBtn.attr('href', pngHref + (_.include(pngHref, "?") ? "&" : "?") + "size=" + defaultTargetSize + "&v=" + cacheTag);
+            pngBtn.attr('href', pngHref + (_.includes(pngHref, "?") ? "&" : "?") + "size=" + defaultTargetSize + "&v=" + cacheTag);
         });
 
         shareMenu.flow('svgBtn, baseUrl, queryStr, cacheTag', function(svgBtn, baseUrl, queryStr, cacheTag) {
             var svgHref = baseUrl + '.svg' + queryStr, defaultTargetSize = "1200x800";
-            svgBtn.attr('href', svgHref + (_.include(svgHref, "?") ? "&" : "?") + "size=" + defaultTargetSize + "&v=" + cacheTag);
+            svgBtn.attr('href', svgHref + (_.includes(svgHref, "?") ? "&" : "?") + "size=" + defaultTargetSize + "&v=" + cacheTag);
         });        
 
         shareMenu.flow('embedBtn, containerNode, baseUrl, queryStr', function(embedBtn, containerNode, baseUrl, queryStr) {

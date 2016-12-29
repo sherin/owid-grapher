@@ -140,7 +140,7 @@
 			var selectedCountries = _.clone(this.get("selected-countries"));
 
 			//make sure the selected contry is not there 
-			if (!_.findWhere(selectedCountries, { id: country.id })) {
+			if (!_.find(selectedCountries, { id: country.id })) {
 				selectedCountries.push(country);
 				this.set('selected-countries', selectedCountries);
 			}
@@ -155,7 +155,7 @@
 			var selectedCountries = _.clone(this.get("selected-countries"));
 
 			//make sure the selected contry is not there 
-			if (!_.findWhere(selectedCountries, { id: country.id })) {
+			if (!_.find(selectedCountries, { id: country.id })) {
 				selectedCountries.push(country);
 				this.set('selected-countries', selectedCountries);
 			}
@@ -223,7 +223,7 @@
 
 		hasVariables: function() {
 			var dims = this.getDimensions();
-			return _.any(dims, function(dim) { return dim.property == 'x' || dim.property == 'y'; });
+			return _.some(dims, function(dim) { return dim.property == 'x' || dim.property == 'y'; });
 		},
 
 		hasEntities: function() {
@@ -248,11 +248,11 @@
 		// Get chart dimensions, ensuring we return only those appropriate for the type
 		getDimensions: function() {
 			var dimensions = this.get("chart-dimensions"),
-				validProperties = _.pluck(this.getEmptyDimensions(), 'property'),
-				validDimensions = _.filter(dimensions, function(dim) { return _.include(validProperties, dim.property); });
+				validProperties = _.map(this.getEmptyDimensions(), 'property'),
+				validDimensions = _.filter(dimensions, function(dim) { return _.includes(validProperties, dim.property); });
 
 			// Give scatterplots a default color dimension if they don't have one
-			if (this.get("chart-type") == App.ChartType.ScatterPlot && !_.findWhere(dimensions, { property: 'color' })) {
+			if (this.get("chart-type") == App.ChartType.ScatterPlot && !_.find(dimensions, { property: 'color' })) {
 				validDimensions = validDimensions.concat([{"variableId":"123","property":"color","unit":"","name":"Color","tolerance":"5"}]);
 			}
 
@@ -304,7 +304,7 @@
 			if (activeLegendKeys === null) {
 				if (offon === true) return;
 				else {
-					activeLegendKeys = _.pluck(legendData, "key");
+					activeLegendKeys = _.map(legendData, "key");
 				}
 			}
 
@@ -315,7 +315,7 @@
 			} else if (offon === false) {
 				activeLegendKeys = _.filter(activeLegendKeys, function(k) { return k != key; });
 			} else {
-				return this.toggleLegendKey(key, !_.contains(activeLegendKeys, key));
+				return this.toggleLegendKey(key, !_.includes(activeLegendKeys, key));
 			}
 
 			this.set("activeLegendKeys", activeLegendKeys);
@@ -331,7 +331,7 @@
 
 		isLegendKeyActive: function(key) {
 			var activeLegendKeys = this.get("activeLegendKeys");
-			return activeLegendKeys === null || _.contains(activeLegendKeys, key);
+			return activeLegendKeys === null || _.includes(activeLegendKeys, key);
 		},
 
 		isMultiEntity: function() {
@@ -348,7 +348,7 @@
 		},
 
 		checkMissingData: function() {
-			var dims = _.indexBy(this.getDimensions(), "property"),
+			var dims = _.keyBy(this.getDimensions(), "property"),
 				chartType = this.get("chart-type"),
 				entityType = this.get("entity-type");
 

@@ -255,7 +255,7 @@
 		_.each(data.values[0], function(value, key) {
 			if (key == "time" || key == "series" || key == "color") return;
 
-			var unit = _.findWhere(units, { property: key }),
+			var unit = _.find(units, { property: key }),
 				isHidden = ( unit && unit.hasOwnProperty( "visible" ) && !unit.visible )? true: false;
 
 			if (isHidden) return;
@@ -357,7 +357,7 @@
 
 		_.each(point, function(v, i) {
 			//for each data point, find appropriate unit, and if we have it, display it
-			var unit = _.findWhere(units, { property: i }),
+			var unit = _.find(units, { property: i }),
 				value = v,
 				isHidden = !!(unit && unit.hasOwnProperty( "visible" ) && !unit.visible);
 
@@ -728,7 +728,7 @@
 		changeTracker.any = function(keys) {
 			if (!keys) return changeTracker.any(trackedKeys);
 
-			return _.any(keys, function(k) {
+			return _.some(keys, function(k) {
 				return changeTracker.changed(k);
 			});
 		};
@@ -759,7 +759,7 @@
 			if (frozen) {
 				return _.has(frozen, prop);
 			} else {
-				return _.any(trackers, function(tracker) {
+				return _.some(trackers, function(tracker) {
 					return tracker.changed(prop);
 				});
 			}
@@ -781,11 +781,11 @@
 			var props = propStr && propStr.split(' ');
 
 			if (frozen) {
-				return _.any(props, function(prop) {
+				return _.some(props, function(prop) {
 					return _.has(frozen, prop);
 				});
 			} else {
-				return _.any(trackers, function(tracker) {
+				return _.some(trackers, function(tracker) {
 					return tracker.any(props);
 				});
 			}
@@ -795,12 +795,12 @@
 			var props = propStr.split(' ');
 
 			if (frozen) {
-				return _.all(_.keys(frozen), function(key) {
-					return _.contains(props, key);
+				return _.every(_.keys(frozen), function(key) {
+					return _.includes(props, key);
 				});
 			} else {
-				return _.all(_.keys(changes.get()), function(key) {
-					return _.contains(props, key);
+				return _.every(_.keys(changes.get()), function(key) {
+					return _.includes(props, key);
 				});				
 			}
 		};

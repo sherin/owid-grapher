@@ -125,7 +125,7 @@
 			_.each(dimensions, function(dimension) {
 				if (dimension.property == "color") return;
 
-				var unitObj = _.findWhere(units, { "property": dimension.property }),
+				var unitObj = _.find(units, { "property": dimension.property }),
 					visible = unitObj && unitObj.hasOwnProperty("visible") ? unitObj.visible : true,
 					visibleProp = ( visible )? " checked": "",
 					title = ( unitObj && unitObj.title ) ? unitObj.title : "",

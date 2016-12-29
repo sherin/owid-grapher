@@ -253,7 +253,7 @@
 				    targetYear = chartTime ? chartTime[0] : parseInt(dimension.targetYear) || latestYearInData,
 				    targetMode = dimension.mode,
 				    tolerance = parseInt(dimension.tolerance),
-				    isCategorical = _.include(['color', 'shape'], dimension.property),
+				    isCategorical = _.includes(['color', 'shape'], dimension.property),
 				    categoryTransform = categoryTransforms[variable.id];
 
 				if (isCategorical && !categoryTransform) {
@@ -314,10 +314,10 @@
 					chartData.push(series);
 			}.bind(this));
 
-			var minYear = _.min(_.map(chartData, function(entityData) {
+			var minYear = _.minBy(_.map(chartData, function(entityData) {
 				return _.min(_.values(entityData.values[0].time));
 			}));
-			var maxYear = _.max(_.map(chartData, function(entityData) {
+			var maxYear = _.maxBy(_.map(chartData, function(entityData) {
 				return _.max(_.values(entityData.values[0].time));
 			}));
 

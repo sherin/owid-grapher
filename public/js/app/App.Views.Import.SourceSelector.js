@@ -19,7 +19,7 @@
 
 			this.sources = App.DatasetModel.getSources();
 			// There must always be a new source with the default template
-			if (!_.findWhere(this.sources, { name: "New source" })) {
+			if (!_.find(this.sources, { name: "New source" })) {
 				 this.sources.push({
 					name: "New source",					
 					description: $(".sources-default").html(),
@@ -51,7 +51,7 @@
 		},
 
 		onSelectSource: function() {
-			this.source = _.findWhere(this.sources, { name: this.$select.val()});
+			this.source = _.find(this.sources, { name: this.$select.val()});
 			this.$(".existing-source-warning").toggle(!!this.source.id);
 
 			// Defaults for new source

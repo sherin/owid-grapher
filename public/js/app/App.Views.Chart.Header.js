@@ -157,7 +157,7 @@
 		headerControl.flow("fillTemplate : minYear, maxYear, entities, entityType", function(minYear, maxYear, entities, entityType) {
 			return function(text) {
 				if (s.contains(text, "*country*")) {
-					var entityStr = _.pluck(entities, "name").join(', ');
+					var entityStr = _.map(entities, "name").join(', ');
 					text = text.replace("*country*", entityStr || ("in selected " + entityType));
 				}
 

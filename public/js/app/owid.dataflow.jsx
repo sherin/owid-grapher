@@ -219,7 +219,7 @@ export default function dataflow() {
 				});
 			}
 
-			var inputChanged =_.any(flow.inputs, function(k) { return _.has(changes, k); });
+			var inputChanged = _.some(flow.inputs, function(k) { return _.has(changes, k); });
 			if (!inputChanged) return flowCycle();
 
 			var hasArgs = true;
