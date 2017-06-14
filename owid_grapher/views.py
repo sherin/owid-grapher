@@ -17,6 +17,10 @@ from django.urls import reverse
 from django.utils.encoding import smart_str
 from grapher_admin.models import Chart, Variable, License, ChartSlugRedirect
 from django.views.decorators.clickjacking import xframe_options_exempt
+import subprocess
+
+def homepage(request, slug):
+    return HttpResponse(subprocess.run(f"curl -s http://localhost:8090/site.js > /tmp/site.js; node /tmp/site.js foo rah", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).stdout)
 
 @login_required
 def index(request):

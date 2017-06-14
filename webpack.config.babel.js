@@ -11,13 +11,15 @@ const isProduction = process.argv.indexOf('-p') !== -1
 export default {
     context: path.join(__dirname, "js"),
     entry: {
-        charts: "./charts.entry.ts",
-        admin: "./admin.entry.js"
+        site: "./site.entry.ts",
+/*        charts: "./charts.entry.ts",
+        admin: "./admin.entry.js"*/
     },
     output: {
         path: path.join(__dirname, "public/build"),
         filename: (isProduction ? "[name].bundle.[chunkhash].js" : "[name].js")
     },
+    target: 'node',
   	resolve: {
         extensions: [".js", ".jsx", ".ts", ".tsx", ".css"],
         alias: {

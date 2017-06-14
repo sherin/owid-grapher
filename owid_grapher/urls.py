@@ -22,10 +22,11 @@ from country_name_tool import views as countrytool_views
 from django.contrib.auth.views import logout
 
 urlpatterns = [
-
     ### Admin-only
 
     url(r'^grapher/$', owid_views.index, name="index"),
+    url(r'^grapher/$', owid_views.index, name="index"),
+
     url(r'^grapher/login$', owid_views.index, name="index"), # Backwards compatibility
     url(r'^grapher/admin/$', admin_views.listcharts, name="listcharts"),
     url(r'^grapher/admin/charts$', admin_views.storechart, name="storechart"),  # post request for storing
@@ -95,4 +96,6 @@ urlpatterns = [
     url(r'^grapher/(?P<slug>[^/]+)\.export', owid_views.show, name="exportchart"),
     url(r'^grapher/(?P<slug>[^/]+)\.(?P<fileformat>.+)', owid_views.exportfile, name="exportfile"),
     url(r'^grapher/(?P<slug>[^/]+)/?$', owid_views.show, name="showchart"),
+
+    url(r'^(?P<slug>[^/]+)/?$', owid_views.homepage, name="home"),
 ]
