@@ -107,8 +107,7 @@ class ShareMenu extends React.Component<ShareMenuProps> {
 }
 
 interface ControlsFooterProps {
-    chart: ChartConfig,
-    chartView: ChartView,
+    chart: ChartConfig
 }
 
 class HighlightToggle extends React.Component<{ chart: ChartConfig, highlightToggle: HighlightToggleConfig }> {
@@ -162,6 +161,8 @@ class AbsRelToggle extends React.Component<{ chart: ChartConfig }> {
 
 @observer
 export default class ControlsFooter extends React.Component<ControlsFooterProps> {
+    context: { chartView: ChartView }
+
     @observable isShareMenuActive: boolean = false
 
     @action.bound onShareMenu() {
@@ -169,7 +170,7 @@ export default class ControlsFooter extends React.Component<ControlsFooterProps>
     }
 
     @action.bound onDataSelect() {
-        this.props.chartView.isSelectingData = true
+        this.context.chartView.isSelectingData = true
     }
 
     @computed get addDataTerm() {
@@ -191,10 +192,10 @@ export default class ControlsFooter extends React.Component<ControlsFooterProps>
                         <a><i className="fa fa-download"/></a>
                     </li>
                     <li className="clickable icon"><a title="Share" onClick={this.onShareMenu}><i className="fa fa-share-alt"/></a></li>
-                    {props.chartView.isEmbed && <li className="clickable icon"><a title="Open chart in new tab" href={chart.url.canonicalUrl} target="_blank"><i className="fa fa-expand"/></a></li>}
+                    {this.context.chartView.isEmbed && <li className="clickable icon"><a title="Open chart in new tab" href={chart.url.canonicalUrl} target="_blank"><i className="fa fa-expand"/></a></li>}
                 </ul>
-            </nav>
-            {chart.tab == 'chart' && <div className="extraControls">
+            </nav>            
+            {chart.tab == 'chart' && !this.props.children && <div className="extraControls">
                 {chart.data.canAddData && <button onClick={this.onDataSelect}>
                     {chart.isScatter ? <span><i className="fa fa-search"/> Search</span> : <span><i className="fa fa-plus"/> Add {this.addDataTerm}</span>}
                 </button>}
@@ -207,7 +208,10 @@ export default class ControlsFooter extends React.Component<ControlsFooterProps>
                 {chart.isStackedArea && chart.stackedArea.canToggleRelative && <AbsRelToggle chart={chart}/>}
                 {chart.isScatter && chart.scatter.canToggleRelative && <AbsRelToggle chart={chart}/>}
             </div>}
-            {isShareMenuActive && <ShareMenu chartView={this.props.chartView} chart={this.props.chart} onDismiss={() => this.isShareMenuActive = false}/>}
+            {this.props.children && <div className="extraControls">
+                {this.props.children}
+            </div>}
+            {isShareMenuActive && <ShareMenu chartView={this.context.chartView} chart={this.props.chart} onDismiss={() => this.isShareMenuActive = false}/>}
         </div>
     }
 }

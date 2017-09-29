@@ -17,6 +17,7 @@ import Tooltip from './Tooltip'
 import NoData from './NoData'
 import {select} from 'd3-selection'
 import {easeCubic} from 'd3-ease'
+import ControlsFooter from './ControlsFooter'
 
 interface TimelineMapProps {
     bounds: Bounds,
@@ -127,7 +128,7 @@ class TimelineMap extends React.Component<TimelineMapProps> {
             {/*<rect x={bounds.left} y={bounds.top} width={bounds.width} height={bounds.height-timelineHeight} fill="#ecf6fc"/>*/}
             <ChoroplethMap bounds={bounds.padBottom(timelineHeight+mapLegend.height+15)} choroplethData={choroplethData} projection={projection} defaultFill={defaultFill} onHover={this.onMapMouseOver} onHoverStop={this.onMapMouseLeave} onClick={this.onClick} focusBracket={focusBracket} focusEntity={focusEntity}/>
             <MapLegendView legend={mapLegend} onMouseOver={this.onLegendMouseOver} onMouseLeave={this.onLegendMouseLeave}/>
-            {hasTimeline && <Timeline bounds={this.props.bounds.fromBottom(timelineHeight)} onTargetChange={this.onTargetChange} years={years} startYear={inputYear} endYear={inputYear} singleYearMode={true}/>}
+            {/*hasTimeline && <Timeline bounds={this.props.bounds.fromBottom(timelineHeight)} onTargetChange={this.onTargetChange} years={years} startYear={inputYear} endYear={inputYear} singleYearMode={true}/>*/}
             {tooltip}
         </g>
     }
@@ -142,11 +143,19 @@ interface MapTabProps {
 export default class MapTab extends React.Component<MapTabProps> {
     @computed get map(): MapConfig { return (this.props.chart.map as MapConfig) }
 
+    @computed get svgBounds() {
+        return this.props.bounds.padBottom(this.controlsFooterHeight)
+    }
+
+    @computed get svgPaddedBounds() {
+        return new Bounds(0, 0, this.svgBounds.width, this.svgBounds.height).pad(15)
+    }
+
     @computed get header() {
         const _this = this
         return new Header({
             get chart() { return _this.props.chart },
-            get maxWidth() { return _this.props.bounds.width },
+            get maxWidth() { return _this.svgPaddedBounds.width },
             get minYear() { return _this.map.data.targetYear },
             get maxYear() { return _this.map.data.targetYear }
         })
@@ -156,22 +165,30 @@ export default class MapTab extends React.Component<MapTabProps> {
         const _this = this
         return new SourcesFooter({
             get chart() { return _this.props.chart },
-            get maxWidth() { return _this.props.bounds.width }
+            get maxWidth() { return _this.svgPaddedBounds.width }
         })
     }
 
-    render() {
-        const {map} = this
-        if (!map.data.isReady)
-            return <NoData bounds={this.props.bounds}/>
-        
-        const {bounds} = this.props
-        const {header, footer} = this
+    @observable.ref controlsFooterHeight: number = 0
 
-        return <g className="mapTab">
-            {header.render(bounds.x, bounds.y)}
-            <TimelineMap
-                bounds={bounds.padTop(header.height+5).padBottom(footer.height)}
+    @computed get innerBounds() {
+        return this.svgPaddedBounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
+    }
+
+    renderSVG() {
+        const {map, header, footer, svgBounds, svgPaddedBounds, innerBounds} = this
+
+        const svgStyle = {
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            fontSize: Bounds.baseFontSize,
+            backgroundColor: "white"
+        }
+
+        return <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style={svgStyle} width={svgBounds.width} height={svgBounds.height}>
+            {header.render(svgPaddedBounds.x, svgPaddedBounds.y)}
+            {!map.data.isReady && <NoData bounds={this.props.bounds}/>}
+            {map.data.isReady && <TimelineMap
+                bounds={innerBounds}
                 choroplethData={map.data.choroplethData}
                 years={map.data.years}
                 inputYear={map.data.targetYear}
@@ -179,9 +196,29 @@ export default class MapTab extends React.Component<MapTabProps> {
                 legendTitle={map.data.legendTitle}
                 projection={map.projection}
                 defaultFill={map.noDataColor}
-            />
-            {footer.render(bounds.x, bounds.bottom-footer.height)}
-        </g>
+            />}
+            {footer.render(svgPaddedBounds.x, svgPaddedBounds.bottom-footer.height)}
+        </svg>
+    }
 
+    base: HTMLDivElement
+    componentDidMount() {
+        this.componentDidUpdate()
+    }
+    componentDidUpdate() {
+        const controlsFooter = this.base.querySelector(".ControlsFooter")
+        if (controlsFooter)
+            this.controlsFooterHeight = controlsFooter.getBoundingClientRect().height
+    }
+
+    render() {
+        const {chart} = this.props
+
+        return <div className="MapTab">
+            {this.renderSVG()}
+            <ControlsFooter chart={chart}>
+            </ControlsFooter>
+            {chart.tooltip}
+        </div>
     }
 }

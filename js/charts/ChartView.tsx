@@ -214,13 +214,18 @@ export default class ChartView extends React.Component<ChartViewProps> {
     renderReady() {
         const {svgBounds, chart} = this
 
+        if (chart.isLineChart && chart.tab == 'chart')
+            return <LineChart bounds={this.bounds} chart={chart}/>
+        else if (chart.tab == 'map')
+            return <MapTab bounds={this.bounds} chart={chart}/>
+
         return [
             svgBounds ? <ChartSVGView chart={chart} bounds={svgBounds}/> : <svg/>,
-            <ControlsFooter chart={chart} chartView={this}/>,
+            <ControlsFooter chart={chart}/>,
             svgBounds && this.renderOverlayTab(svgBounds),
             this.popups,
             this.chart.tooltip,
-            this.isSelectingData && <DataSelector chart={chart} chartView={this} onDismiss={action(() => this.isSelectingData = false)}/>
+            this.isSelectingData && <DataSelector chart={chart} onDismiss={action(() => this.isSelectingData = false)}/>
         ]
     }
 

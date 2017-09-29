@@ -24,6 +24,8 @@ import {select} from 'd3-selection'
 import {easeLinear} from 'd3-ease'
 import Header from './Header'
 import SourcesFooter from './SourcesFooter'
+import ControlsFooter from './ControlsFooter'
+import DataSelector from './DataSelector'
 
 export interface LineChartValue {
     x: number,
@@ -130,6 +132,9 @@ export class LineChartInner extends React.Component<{ bounds: Bounds, chart: Cha
     }
 
     render() {
+        if (this.transform.failMessage)
+            return <NoData bounds={this.props.bounds} message={this.transform.failMessage}/>
+
         const {chart, transform, bounds, legend, tooltip, focusKeys, axisBox} = this
         const {groupedData} = transform
 
@@ -151,12 +156,22 @@ export class LineChartInner extends React.Component<{ bounds: Bounds, chart: Cha
 }
 
 @observer
-export default class LineChart extends React.Component<{ bounds: Bounds, chart: ChartConfig }> {
+export default class LineChartView extends React.Component<{ bounds: Bounds, chart: ChartConfig }> {
+    @observable.ref controlsFooterHeight: number = 0
+
+    @computed get svgBounds() {
+        return this.props.bounds.padBottom(this.controlsFooterHeight)
+    }
+
+    @computed get svgPaddedBounds() {
+        return new Bounds(0, 0, this.svgBounds.width, this.svgBounds.height).pad(15)
+    }
+
     @computed get header() {
         const that = this
         return new Header({
             get chart() { return that.props.chart },
-            get maxWidth() { return that.props.bounds.width }
+            get maxWidth() { return that.svgPaddedBounds.width }
         })
     }
 
@@ -164,26 +179,66 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
         const that = this
         return new SourcesFooter({
             get chart() { return that.props.chart },
-            get maxWidth() { return that.props.bounds.width }
+            get maxWidth() { return that.svgPaddedBounds.width }
         })
     }
 
     @computed get innerBounds() {
-        return this.props.bounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
+        return this.svgPaddedBounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
+    }
+
+    renderSVG() {
+        const {props, header, footer, svgBounds, svgPaddedBounds, innerBounds} = this
+
+        const svgStyle = {
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            fontSize: Bounds.baseFontSize,
+            backgroundColor: "white"
+        }
+
+        return <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style={svgStyle} width={svgBounds.width} height={svgBounds.height}>
+            {header.render(svgPaddedBounds.x, svgPaddedBounds.y)}
+            <LineChartInner chart={props.chart} bounds={innerBounds}/>
+            {footer.render(svgPaddedBounds.x, svgPaddedBounds.bottom-footer.height)}
+        </svg>
+    }
+
+    base: HTMLDivElement
+    componentDidMount() {
+        this.componentDidUpdate()
+    }
+    componentDidUpdate() {
+        const controlsFooter = this.base.querySelector(".ControlsFooter")
+        if (controlsFooter)
+            this.controlsFooterHeight = controlsFooter.getBoundingClientRect().height
+    }
+
+    @observable.ref isSelectingData: boolean = false
+    @action.bound onDataSelect() {
+        this.isSelectingData = true
+    }
+
+    @computed get addDataTerm() {
+        const {chart} = this.props
+        return chart.data.isSingleEntity ? "data" : chart.entityType
     }
 
     render() {
-        const {bounds, chart} = this.props
+        const {chart} = this.props
 
-        if (chart.lineChart.failMessage)
-            return <NoData bounds={this.props.bounds} message={chart.lineChart.failMessage}/>
+        return <div className="LineChart">
+            {this.renderSVG()}
+            <ControlsFooter chart={chart}>
+                {chart.data.canAddData && <button onClick={this.onDataSelect}>
+                    <span><i className="fa fa-plus"/> Add {this.addDataTerm}</span>
+                </button>}
 
-        const {header, footer, innerBounds} = this
-
-        return <g className="LineChart">
-            {header.render(bounds.x, bounds.y)}
-            <LineChartInner chart={chart} bounds={innerBounds}/>
-            {footer.render(bounds.x, bounds.bottom-footer.height)}
-        </g>
+                {chart.data.canChangeEntity && <button onClick={this.onDataSelect}>
+                    <i className="fa fa-exchange"/> Change {chart.entityType}
+                </button>}
+            </ControlsFooter>
+            {chart.tooltip}
+            {this.isSelectingData && <DataSelector chart={chart} onDismiss={action(() => this.isSelectingData = false)}/>}
+        </div>
     }
 }

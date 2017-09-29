@@ -5,11 +5,10 @@ import {computed, action, observable} from 'mobx'
 import ChartConfig from './ChartConfig'
 import {DataKeyInfo} from './ChartData'
 const styles = require("./DataSelector.css")
-import ChartView from './ChartView'
 import FuzzySearch from './FuzzySearch'
 
 @observer
-export class DataSelectorMulti extends React.Component<{ chart: ChartConfig, chartView: ChartView, onDismiss: () => void }> {
+export class DataSelectorMulti extends React.Component<{ chart: ChartConfig, onDismiss: () => void }> {
     @observable searchInput?: string
     searchField: HTMLInputElement
     base: HTMLDivElement
@@ -45,7 +44,7 @@ export class DataSelectorMulti extends React.Component<{ chart: ChartConfig, cha
 
     componentDidMount() {
         setTimeout(() => document.addEventListener("click", this.onClickOutside), 1)
-        if (!this.props.chartView.isMobile)
+        if (!this.context.chartView.isMobile)
             this.searchField.focus()
     }
 
@@ -97,7 +96,7 @@ export class DataSelectorMulti extends React.Component<{ chart: ChartConfig, cha
 }
 
 @observer
-export class DataSelectorSingle extends React.Component<{ chart: ChartConfig, chartView: ChartView, onDismiss: () => void }> {
+export class DataSelectorSingle extends React.Component<{ chart: ChartConfig, onDismiss: () => void }> {
     @observable searchInput?: string
     searchField: HTMLInputElement
     base: HTMLDivElement
@@ -128,7 +127,7 @@ export class DataSelectorSingle extends React.Component<{ chart: ChartConfig, ch
 
     componentDidMount() {
         setTimeout(() => document.addEventListener("click", this.onClickOutside), 1)
-        if (!this.props.chartView.isMobile)
+        if (!this.context.chartView.isMobile)
             this.searchField.focus()
     }
 
@@ -166,7 +165,7 @@ export class DataSelectorSingle extends React.Component<{ chart: ChartConfig, ch
 }
 
 @observer
-export default class DataSelector extends React.Component<{ chart: ChartConfig, chartView: ChartView, onDismiss: () => void }> {
+export default class DataSelector extends React.Component<{ chart: ChartConfig, onDismiss: () => void }> {
     render() {
         const {chart} = this.props
 
