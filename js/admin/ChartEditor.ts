@@ -60,7 +60,7 @@ export default class ChartEditor {
 	@observable.ref tab: EditorTab = 'basic'
 
 	@computed get availableTabs(): EditorTab[] {
-		if (!this.chart.activeTransform.isValidConfig) {
+		if (!this.chart.primaryTransform.isValidConfig) {
 			return ['basic']
 		} else {
 			const tabs: EditorTab[] = ['basic', 'data', 'text', 'customize']

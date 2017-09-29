@@ -42,7 +42,7 @@ export interface LineChartSeries {
 }
 
 @observer
-export default class LineChart extends React.Component<{ bounds: Bounds, chart: ChartConfig }> {
+export class LineChartInner extends React.Component<{ bounds: Bounds, chart: ChartConfig }> {
     @computed get chart() { return this.props.chart }
     @computed get bounds() { return this.props.bounds }
     @computed get transform() { return this.props.chart.lineChart }
@@ -68,10 +68,10 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
         if (this.chart.hideLegend)
             return undefined
 
-        const _this = this
+        const that = this
         return new HeightedLegend({
-            get maxWidth() { return _this.bounds.width/3 },
-            get items() { return _this.legendItems }
+            get maxWidth() { return that.bounds.width/3 },
+            get items() { return that.legendItems }
         })
     }
 
@@ -106,6 +106,15 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
             this.chart.data.toggleKey(datakey)
     }
 
+    @computed get axisBox() {
+        const that = this
+        return new AxisBox({
+            get bounds() { return that.bounds.padRight(10).padRight(that.legend ? that.legend.width : 0) },
+            get yAxis() { return that.transform.yAxis },
+            get xAxis() { return that.transform.xAxis }
+        })
+    }
+
     base: SVGGElement
     componentDidMount() {
         // Fancy intro animation
@@ -120,45 +129,11 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
                 .on("end", () => this.forceUpdate()) // Important in case bounds changes during transition
     }
 
-    @computed get header() {
-        const _this = this
-        return new Header({
-            get chart() { return _this.props.chart },
-            get maxWidth() { return _this.props.bounds.width }
-        })
-    }
-
-    @computed get footer() {
-        const _this = this
-        return new SourcesFooter({
-            get chart() { return _this.props.chart },
-            get maxWidth() { return _this.props.bounds.width }
-        })
-    }
-
-    @computed get innerBounds() {
-        return this.props.bounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
-    }
-
-    @computed get axisBox() {
-        const that = this
-        return new AxisBox({
-            get bounds() { return that.innerBounds.padRight(10).padRight(that.legend ? that.legend.width : 0) },
-            get yAxis() { return that.transform.yAxis },
-            get xAxis() { return that.transform.xAxis }
-        })
-    }
-
     render() {
-        if (this.transform.failMessage)
-            return <NoData bounds={this.props.bounds} message={this.transform.failMessage}/>
-
-        const {chart, transform, bounds, legend, tooltip, focusKeys, axisBox, header, footer} = this
+        const {chart, transform, bounds, legend, tooltip, focusKeys, axisBox} = this
         const {groupedData} = transform
 
-        return <g className="LineChart">
-            {header.render(bounds.x, bounds.y)}
-
+        return <g className="LineChartInner">
             <defs>
                 <clipPath id="boundsClip">
                     <rect x={axisBox.innerBounds.x-10} y={0} width={bounds.width+10} height={bounds.height*2}></rect>
@@ -171,7 +146,43 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
             </g>
             {/*hoverTarget && <AxisBoxHighlight axisBox={axisBox} value={hoverTarget.value}/>*/}
             {tooltip}
+        </g>
+    }
+}
 
+@observer
+export default class LineChart extends React.Component<{ bounds: Bounds, chart: ChartConfig }> {
+    @computed get header() {
+        const that = this
+        return new Header({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width }
+        })
+    }
+
+    @computed get footer() {
+        const that = this
+        return new SourcesFooter({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width }
+        })
+    }
+
+    @computed get innerBounds() {
+        return this.props.bounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
+    }
+
+    render() {
+        const {bounds, chart} = this.props
+
+        if (chart.lineChart.failMessage)
+            return <NoData bounds={this.props.bounds} message={chart.lineChart.failMessage}/>
+
+        const {header, footer, innerBounds} = this
+
+        return <g className="LineChart">
+            {header.render(bounds.x, bounds.y)}
+            <LineChartInner chart={chart} bounds={innerBounds}/>
             {footer.render(bounds.x, bounds.bottom-footer.height)}
         </g>
     }

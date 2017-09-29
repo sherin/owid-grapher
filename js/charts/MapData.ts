@@ -7,6 +7,7 @@ import Color from './Color'
 import {ChoroplethData} from './ChoroplethMap'
 import {entityNameForMap} from './Util'
 import DimensionWithData from './DimensionWithData'
+import IChartTransform from './IChartTransform'
 
 export interface MapDataValue {
     entity: string,
@@ -65,7 +66,7 @@ export class CategoricalBin {
 
 export type MapLegendBin = NumericBin | CategoricalBin
 
-export default class MapData {
+export default class MapData implements IChartTransform {
     chart: ChartConfig
     constructor(chart: ChartConfig) {
         this.chart = chart
@@ -96,6 +97,10 @@ export default class MapData {
                 }
             }
         )
+    }
+
+    @computed get isValidConfig() {
+        return true
     }
 
     @computed get map() { return this.chart.map }

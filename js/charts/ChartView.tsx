@@ -258,17 +258,4 @@ export default class ChartView extends React.Component<ChartViewProps> {
         if (controlsFooter)
             this.controlsFooterHeight = controlsFooter.getBoundingClientRect().height
     }
-
-    // XXX
-    getTransformedBounds(node: HTMLElement) {
-        var chartRect = this.base.getBoundingClientRect(),
-            nodeRect = node.getBoundingClientRect();
-
-        return new Bounds(
-            nodeRect.left-chartRect.left,
-            nodeRect.top-chartRect.top,
-            nodeRect.width,
-            nodeRect.height
-        );
-    };
 }

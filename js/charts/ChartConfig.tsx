@@ -303,7 +303,7 @@ export default class ChartConfig {
     @computed get discreteBar() { return new DiscreteBarTransform(this) }
     @computed get map() { return new MapConfig(this) }
 
-    @computed get activeTransform(): IChartTransform {
+    @computed get primaryTransform(): IChartTransform {
         if (this.isLineChart)
             return this.lineChart
         else if (this.isScatter)
@@ -316,6 +316,13 @@ export default class ChartConfig {
             return this.discreteBar
         else
             throw "No transform found"
+    }
+
+    @computed get activeTransform(): IChartTransform {
+        if (this.tab == 'map')
+            return this.map.data
+        else
+            return this.primaryTransform
     }
 
 	constructor(props: ChartConfigProps) {        
