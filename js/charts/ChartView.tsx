@@ -79,7 +79,7 @@ export default class ChartView extends React.Component<ChartViewProps> {
         let chartView
         const chart = new ChartConfig(jsonConfig)
 
-        function render() {
+        function onResize() {
             const rect = containerNode.getBoundingClientRect()
             const containerBounds = Bounds.fromRect(rect)
 
@@ -91,11 +91,14 @@ export default class ChartView extends React.Component<ChartViewProps> {
             Bounds.baseFontFamily = "Helvetica, Arial"
             //if (containerBounds.width > 850)
             //    Bounds.baseFontSize = 18
-            chartView = ReactDOM.render(<ChartView bounds={containerBounds} chart={chart} isEditor={isEditor}/>, containerNode)
+
+            chart.containerBounds = containerBounds
         }
 
-        render()
-        window.onresize = render
+        onResize()
+        window.onresize = onResize
+        
+        chartView = ReactDOM.render(<ChartView chart={chart} isEditor={isEditor}/>, containerNode)
         return chartView
     }
 
@@ -106,7 +109,7 @@ export default class ChartView extends React.Component<ChartViewProps> {
     @computed get isEmbed() { return !this.isExport && (window.self != window.top || this.isEditor) }
     @computed get isMobile() { return select('html').classed('touchevents') }
 
-    @computed get containerBounds() { return this.props.bounds }
+    @computed get containerBounds() { return this.chart.containerBounds }
 
     @computed get isPortrait() { return this.containerBounds.width < this.containerBounds.height }
     @computed get isLandscape() { return !this.isPortrait }

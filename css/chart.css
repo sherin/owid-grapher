@@ -202,12 +202,13 @@ a {
 #chart.portrait .extraControls {
     font-size: 0.8em;
     border-bottom: 1px solid #e1e1e1;
+    align-items: center;
+    justify-content: center;
 }
 
 #chart .extraControls {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-grow: 1;
     height: 100%;
     padding-top: 0.4em;
     padding-bottom: 0.4em;
@@ -687,7 +688,6 @@ a {
     display: flex;
     align-items: center;
     font-size: 1.2em;
-    padding: 0.5em;
 
     & > div {
         margin-right: 0.5em;

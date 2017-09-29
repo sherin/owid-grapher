@@ -125,11 +125,11 @@ export default class Header {
     }
 
     @computed get subtitle() {
-        const _this = this
+        const that = this
         return new TextWrap({
-            get maxWidth() { return _this.subtitleWidth },
+            get maxWidth() { return that.subtitleWidth },
             get fontSize() { return 0.8 },
-            get text() { return _this.subtitleText }
+            get text() { return that.subtitleText }
         })
     }
 

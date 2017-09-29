@@ -22,7 +22,6 @@ import HTMLTimeline from './HTMLTimeline'
 interface TimelineMapProps {
     bounds: Bounds,
     choroplethData: ChoroplethData,
-    years: number[],
     inputYear: number,
     legendData: MapLegendBin[],
     legendTitle: string,
@@ -85,11 +84,6 @@ class TimelineMap extends React.Component<TimelineMapProps> {
         this.focusBracket = null
     }
 
-
-    @computed get hasTimeline(): boolean {
-        return this.props.years.length > 1 && !this.context.chartView.isExport
-    }
-
     @computed get mapLegend(): MapLegend {
         const that = this
         return new MapLegend({
@@ -135,35 +129,35 @@ interface MapTabProps {
 export default class MapTab extends React.Component<MapTabProps> {
     @computed get map(): MapConfig { return (this.props.chart.map as MapConfig) }
 
-    @computed get svgBounds() {
-        return this.props.bounds.padBottom(this.controlsFooterHeight)
+    @computed.struct get svgBounds() {
+        return this.props.bounds.padBottom(this.controlsFooterHeight)        
     }
 
-    @computed get svgPaddedBounds() {
+    @computed.struct get svgPaddedBounds() {
         return new Bounds(0, 0, this.svgBounds.width, this.svgBounds.height).pad(15)
     }
 
     @computed get header() {
-        const _this = this
+        const that = this
         return new Header({
-            get chart() { return _this.props.chart },
-            get maxWidth() { return _this.svgPaddedBounds.width },
-            get minYear() { return _this.map.data.targetYear },
-            get maxYear() { return _this.map.data.targetYear }
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.svgPaddedBounds.width },
+            get minYear() { return that.map.data.targetYear },
+            get maxYear() { return that.map.data.targetYear }
         })
     }
 
     @computed get footer() {
-        const _this = this
+        const that = this
         return new SourcesFooter({
-            get chart() { return _this.props.chart },
-            get maxWidth() { return _this.svgPaddedBounds.width }
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.svgPaddedBounds.width }
         })
     }
 
     @observable.ref controlsFooterHeight: number = 0
 
-    @computed get innerBounds() {
+    @computed.struct get innerBounds() {
         return this.svgPaddedBounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
     }
 
@@ -182,7 +176,6 @@ export default class MapTab extends React.Component<MapTabProps> {
             {map.data.isReady && <TimelineMap
                 bounds={innerBounds}
                 choroplethData={map.data.choroplethData}
-                years={map.data.years}
                 inputYear={map.data.targetYear}
                 legendData={map.data.legendData}
                 legendTitle={map.data.legendTitle}

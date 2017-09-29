@@ -141,6 +141,8 @@ export class ChartConfigProps {
 export default class ChartConfig {
     props: ChartConfigProps = new ChartConfigProps()
 
+    @observable.ref containerBounds: Bounds = new Bounds(0, 0, 1000, 1000)
+
     @computed get id() { return this.props.id }
     @computed get type() { return this.props.type }
     @computed get subtitle() { return defaultTo(this.props.subtitle, "") }
