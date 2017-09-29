@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {uniq} from './Util'
 import {computed} from 'mobx'
+import {observer} from 'mobx-react'
 import Bounds from './Bounds'
 import {ScaleType} from './AxisScale'
 import AxisScale from './AxisScale'
@@ -87,6 +88,7 @@ export default class HorizontalAxis {
     }
 }
 
+@observer
 export class HorizontalAxisView extends React.Component<{ bounds: Bounds, axis: HorizontalAxis, onScaleTypeChange?: (scale: ScaleType) => void }> {
     render() {
         const {bounds, axis, onScaleTypeChange} = this.props
