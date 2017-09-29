@@ -17,6 +17,8 @@ import Color from './Color'
 import HorizontalAxis, {HorizontalAxisView} from './HorizontalAxis'
 import {AxisGridLines} from './AxisBox'
 import NoData from './NoData'
+import Header from './Header'
+import SourcesFooter from './SourcesFooter'
 
 export interface DiscreteBarDatum {
     key: string,
@@ -31,7 +33,8 @@ export default class DiscreteBarChart extends React.Component<{ bounds: Bounds, 
     base: SVGGElement
 
     @computed get chart() { return this.props.chart }
-    @computed.struct get bounds() { return this.props.bounds.padRight(10) }
+
+    @computed get innerBounds() { return this.props.bounds.padTop(this.header.height+20).padBottom(this.footer.height+15).padRight(10)}
 
     @computed get failMessage() {
         return this.chart.discreteBar.failMessage
@@ -74,7 +77,7 @@ export default class DiscreteBarChart extends React.Component<{ bounds: Bounds, 
     }
 
     @computed get xRange() {
-        return [this.bounds.left+this.legendWidth+(this.hasNegative ? this.maxValueWidth : 0), this.bounds.right-this.maxValueWidth]
+        return [this.innerBounds.left+this.legendWidth+(this.hasNegative ? this.maxValueWidth : 0), this.innerBounds.right-this.maxValueWidth]
     }
 
     @computed get xScale() {
@@ -83,23 +86,23 @@ export default class DiscreteBarChart extends React.Component<{ bounds: Bounds, 
     }
 
     @computed get xAxis() {
-        const _this = this
+        const that = this
         return new HorizontalAxis({
-            get scale() { return _this.xScale },
-            get labelText() { return _this.chart.yAxis.label||"" }
+            get scale() { return that.xScale },
+            get labelText() { return that.chart.yAxis.label||"" }
         })
     }
 
-    @computed get innerBounds() {
-        return this.bounds.padLeft(this.legendWidth).padBottom(this.xAxis.height).padRight(this.maxValueWidth)
+    @computed get axisBounds() {
+        return this.innerBounds.padLeft(this.legendWidth).padBottom(this.xAxis.height).padRight(this.maxValueWidth)
     }
 
     @computed get barHeight() {
-        return 0.8 * this.innerBounds.height/this.data.length        
+        return 0.8 * this.axisBounds.height/this.data.length        
     }
 
     @computed get barSpacing() {
-        return (this.innerBounds.height/this.data.length) - this.barHeight
+        return (this.axisBounds.height/this.data.length) - this.barHeight
     }
     
     @computed get barPlacements() {
@@ -135,18 +138,38 @@ export default class DiscreteBarChart extends React.Component<{ bounds: Bounds, 
         return this.chart.discreteBar.barValueFormat
     }
 
+    @computed get header() {
+        const that = this
+        return new Header({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width },
+            get minYear() { return that.chart.discreteBar.targetYear },
+            get maxYear() { return that.chart.discreteBar.targetYear }
+        })
+    }
+
+    @computed get footer() {
+        const that = this
+        return new SourcesFooter({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width }
+        })
+    }
+
     render() {
         if (this.failMessage)
-            return <NoData bounds={this.bounds} message={this.failMessage}/>
+            return <NoData bounds={this.props.bounds} message={this.failMessage}/>
 
-        const {data, bounds, legendWidth, xAxis, xScale, innerBounds, barHeight, barSpacing, valueFontSize, barValueFormat} = this
+        const {bounds} = this.props
+        const {data, innerBounds, legendWidth, xAxis, xScale, axisBounds, barHeight, barSpacing, valueFontSize, barValueFormat, header, footer} = this
 
-        let yOffset = innerBounds.top+barHeight/2
+        let yOffset = axisBounds.top+barHeight/2
 
         return <g className="DiscreteBarChart">
-            <rect x={bounds.left} y={bounds.top} width={bounds.width} height={bounds.height} opacity={0} fill="rgba(255,255,255,0)"/>
-            <HorizontalAxisView bounds={bounds} axis={xAxis}/>
-            <AxisGridLines orient="bottom" scale={xScale} bounds={innerBounds}/>
+            {header.render(bounds.x, bounds.y)}
+
+            <HorizontalAxisView bounds={innerBounds} axis={xAxis}/>
+            <AxisGridLines orient="bottom" scale={xScale} bounds={axisBounds}/>
             {data.map(d => {
                 const isNegative = d.value < 0
                 const barX = isNegative ? xScale.place(d.value) : xScale.place(0)
@@ -160,6 +183,8 @@ export default class DiscreteBarChart extends React.Component<{ bounds: Bounds, 
                 yOffset += barHeight+barSpacing
                 return result
             })}
+
+            {footer.render(bounds.x, bounds.bottom-footer.height)}
         </g>
     }
 }

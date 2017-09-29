@@ -44,10 +44,10 @@ class Logo {
 }
 
 interface HeaderProps {
+    chart: ChartConfig,
     maxWidth: number,
-    minYear: number|null,
-    maxYear: number|null,
-    chart: ChartConfig
+    minYear?: number,
+    maxYear?: number
 }
 
 export default class Header {

@@ -206,7 +206,7 @@ export default class LabelledSlopes extends React.Component<LabelledSlopesProps>
 	}
 
 	@computed get yScale(): ScaleLinear<number, number>|ScaleLogarithmic<number, number> {
-		return this.yScaleConstructor().domain(this.yDomain).range(this.props.bounds.padBottom(50).yRange())
+		return this.yScaleConstructor().domain(this.yDomain).range(this.props.bounds.padBottom(30).yRange())
 	}
 
 	@computed get xScale(): ScaleLinear<number, number> {

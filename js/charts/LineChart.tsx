@@ -22,6 +22,8 @@ import NoData from './NoData'
 import {formatYear} from './Util'
 import {select} from 'd3-selection'
 import {easeLinear} from 'd3-ease'
+import Header from './Header'
+import SourcesFooter from './SourcesFooter'
 
 export interface LineChartValue {
     x: number,
@@ -118,10 +120,30 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
                 .on("end", () => this.forceUpdate()) // Important in case bounds changes during transition
     }
 
+    @computed get header() {
+        const _this = this
+        return new Header({
+            get chart() { return _this.props.chart },
+            get maxWidth() { return _this.props.bounds.width }
+        })
+    }
+
+    @computed get footer() {
+        const _this = this
+        return new SourcesFooter({
+            get chart() { return _this.props.chart },
+            get maxWidth() { return _this.props.bounds.width }
+        })
+    }
+
+    @computed get innerBounds() {
+        return this.props.bounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
+    }
+
     @computed get axisBox() {
         const that = this
         return new AxisBox({
-            get bounds() { return that.bounds.padRight(10).padRight(that.legend ? that.legend.width : 0) },
+            get bounds() { return that.innerBounds.padRight(10).padRight(that.legend ? that.legend.width : 0) },
             get yAxis() { return that.transform.yAxis },
             get xAxis() { return that.transform.xAxis }
         })
@@ -131,10 +153,12 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
         if (this.transform.failMessage)
             return <NoData bounds={this.props.bounds} message={this.transform.failMessage}/>
 
-        const {chart, transform, bounds, legend, tooltip, focusKeys, axisBox} = this
+        const {chart, transform, bounds, legend, tooltip, focusKeys, axisBox, header, footer} = this
         const {groupedData} = transform
 
         return <g className="LineChart">
+            {header.render(bounds.x, bounds.y)}
+
             <defs>
                 <clipPath id="boundsClip">
                     <rect x={axisBox.innerBounds.x-10} y={0} width={bounds.width+10} height={bounds.height*2}></rect>
@@ -147,6 +171,8 @@ export default class LineChart extends React.Component<{ bounds: Bounds, chart: 
             </g>
             {/*hoverTarget && <AxisBoxHighlight axisBox={axisBox} value={hoverTarget.value}/>*/}
             {tooltip}
+
+            {footer.render(bounds.x, bounds.bottom-footer.height)}
         </g>
     }
 }

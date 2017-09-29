@@ -7,7 +7,6 @@ import 'd3-transition'
 
 import ChartConfig, {ChartConfigProps} from './ChartConfig'
 import ControlsFooter from './ControlsFooter'
-import ChartTab from './ChartTab'
 import DataTab from './DataTab'
 import MapTab from './MapTab'
 import SourcesTab from './SourcesTab'
@@ -15,6 +14,12 @@ import DownloadTab from './DownloadTab'
 import {VNode} from './Util'
 import Bounds from './Bounds'
 import DataSelector from './DataSelector'
+
+import SlopeChart from './SlopeChart'
+import ScatterPlot from './ScatterPlot'
+import LineChart from './LineChart'
+import StackedArea from './StackedArea'
+import DiscreteBarChart from './DiscreteBarChart'
 
 declare const App: any // XXX
 declare const window: any
@@ -27,6 +32,43 @@ interface ChartViewProps {
     chart: ChartConfig,
     isExport?: boolean,
     isEditor?: boolean
+}
+
+export class ChartSVGView extends React.Component<{ chart: ChartConfig, bounds: Bounds }> {
+    renderPrimaryTab(bounds: Bounds): JSX.Element|undefined {
+        const {chart} = this.props
+        if (chart.primaryTab == 'chart') {
+            if (chart.isSlopeChart)
+                return <SlopeChart bounds={bounds} chart={chart}/>
+            else if (chart.isScatter)
+                return <ScatterPlot bounds={bounds} chart={chart} isStatic={this.context.chartView.isExport}/>
+            else if (chart.isLineChart)
+                return <LineChart bounds={bounds} chart={chart}/>
+            else if (chart.isStackedArea)
+                return <StackedArea bounds={bounds} chart={chart}/>
+            else if (chart.isDiscreteBar)
+                return <DiscreteBarChart bounds={bounds} chart={chart}/>
+            else
+                return undefined        
+        } else if (chart.primaryTab == 'map')
+            return <MapTab bounds={bounds} chart={chart}/>
+        else
+            return undefined
+    }
+
+    render() {
+        const {bounds} = this.props
+
+        const svgStyle = {
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            fontSize: Bounds.baseFontSize,
+            backgroundColor: "white"
+        }
+
+        return <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style={svgStyle} width={bounds.width} height={bounds.height}>
+            {this.renderPrimaryTab(bounds.pad(15))}
+        </svg>
+    }
 }
 
 @observer
@@ -65,7 +107,6 @@ export default class ChartView extends React.Component<ChartViewProps> {
 
     @computed get containerBounds() { return this.props.bounds }
 
-
     @computed get isPortrait() { return this.containerBounds.width < this.containerBounds.height }
     @computed get isLandscape() { return !this.isPortrait }
 
@@ -95,28 +136,37 @@ export default class ChartView extends React.Component<ChartViewProps> {
     @computed get renderWidth() { return this.fitBounds ? this.containerBounds.width-(this.isEmbed ? 3 : 0) : this.idealWidth }
     @computed get renderHeight() { return this.fitBounds ? this.containerBounds.height-(this.isEmbed ? 3 : 0) : this.idealHeight }
 
-    @computed get controlsFooterHeight() {
+    @computed get bounds() {
+        return new Bounds(0, 0, this.renderWidth, this.renderHeight)
+    }
+
+    /*@computed get controlsFooterHeight() {
         const height = Bounds.forText("CHART", { fontSize: Bounds.baseFontSize +'px' }).height*2
         if (this.isPortrait && this.props.chart.tab == 'chart')
             return height*2
         else
             return height        
-    }
+    }*/
 
-    @computed get svgBounds() {
+    /*@computed get svgBounds() {
         return (new Bounds(0, 0, this.renderWidth, this.renderHeight)).padBottom(this.isExport ? 0 : this.controlsFooterHeight)
     }
 
     @computed get svgInnerBounds() {
         return new Bounds(0, 0, this.svgBounds.width, this.svgBounds.height).pad(15)
-    }
+    }*/
+
 
     @observable popups: VNode[] = []
     @observable.ref isSelectingData: boolean = false
 
     @observable.ref htmlNode: HTMLDivElement
-    @observable.ref svgNode: SVGSVGElement
+    @observable.ref controlsFooterHeight?: number
     base: HTMLDivElement
+
+    @computed get svgBounds() {
+        return this.controlsFooterHeight !== undefined && this.bounds.padBottom(this.controlsFooterHeight)
+    }
 
     @computed get classNames(): string {
         const classNames = [
@@ -148,18 +198,8 @@ export default class ChartView extends React.Component<ChartViewProps> {
         }
     }
 
-    renderPrimaryTab(bounds: Bounds): JSX.Element|undefined {
-        const {chart} = this
-        if (chart.primaryTab == 'chart')
-            return <ChartTab bounds={bounds} chartView={this} chart={this.chart}/>
-        else if (chart.primaryTab == 'map')
-            return <MapTab bounds={bounds} chart={this.chart}/>
-        else
-            return undefined
-    }
-
     renderOverlayTab(bounds: Bounds): JSX.Element|undefined {
-        const {chart} = this
+        const {chart} = this.props
         if (chart.overlayTab == 'sources')
             return <SourcesTab bounds={bounds} chart={chart}/>
         else if (chart.overlayTab == 'data')
@@ -170,27 +210,13 @@ export default class ChartView extends React.Component<ChartViewProps> {
             return undefined
     }
 
-    renderSVG() {
-        const {svgBounds, svgInnerBounds} = this
-
-        const svgStyle = {
-            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-            fontSize: Bounds.baseFontSize,
-            backgroundColor: "white"
-        }
-
-        return <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style={svgStyle} width={svgBounds.width} height={svgBounds.height} ref={(e: SVGSVGElement) => this.svgNode = e}>
-            {this.renderPrimaryTab(svgInnerBounds)}
-        </svg>
-    }
-
     renderReady() {
         const {svgBounds, chart} = this
 
         return [
-            this.renderSVG(),
-            <ControlsFooter chart={this.chart} chartView={this}/>,
-            this.renderOverlayTab(svgBounds),
+            svgBounds ? <ChartSVGView chart={chart} bounds={svgBounds}/> : <svg/>,
+            <ControlsFooter chart={chart} chartView={this}/>,
+            svgBounds && this.renderOverlayTab(svgBounds),
             this.popups,
             this.chart.tooltip,
             this.isSelectingData && <DataSelector chart={chart} chartView={this} onDismiss={action(() => this.isSelectingData = false)}/>
@@ -203,7 +229,7 @@ export default class ChartView extends React.Component<ChartViewProps> {
 
     render() {
         if (this.isExport) {
-            return this.renderSVG()
+            return <ChartSVGView chart={this.chart} bounds={this.bounds}/>
         } else{
             const {renderWidth, renderHeight} = this
 
@@ -219,7 +245,6 @@ export default class ChartView extends React.Component<ChartViewProps> {
         this.htmlNode = this.base
         window.chartView = this
     }
-
     
     hasFadedIn: boolean = false
     componentDidUpdate() {
@@ -227,6 +252,10 @@ export default class ChartView extends React.Component<ChartViewProps> {
             selectAll("#chart > *").style('opacity', 0).transition().style('opacity', null)
             this.hasFadedIn = true
         }
+
+        const controlsFooter = this.htmlNode.querySelector(".ControlsFooter")
+        if (controlsFooter)
+            this.controlsFooterHeight = controlsFooter.getBoundingClientRect().height
     }
 
     // XXX

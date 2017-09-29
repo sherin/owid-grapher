@@ -24,19 +24,39 @@ import AxisBox, {AxisBoxView} from './AxisBox'
 import ComparisonLine from './ComparisonLine'
 import {ScaleType} from './AxisScale'
 import {formatYear, first, last} from './Util'
+import Header from './Header'
+import SourcesFooter from './SourcesFooter'
 
 @observer
-export default class ScatterPlot extends React.Component<{ bounds: Bounds, config: ChartConfig, isStatic: boolean }> {
+export default class ScatterPlot extends React.Component<{ bounds: Bounds, chart: ChartConfig, isStatic: boolean }> {
     @computed get chart() : ChartConfig {
-        return this.props.config
+        return this.props.chart
     }
 
     @computed get transform() {
         return this.chart.scatter
     }
 
-    @computed.struct get bounds() : Bounds {
-        return this.props.bounds
+    @computed get header() {
+        const that = this
+        return new Header({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width },
+            get minYear() { return that.transform.startYear },
+            get maxYear() { return that.transform.endYear }
+        })
+    }
+
+    @computed get footer() {
+        const that = this
+        return new SourcesFooter({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width }
+        })
+    }
+
+    @computed get innerBounds() {
+        return this.props.bounds.padTop(this.header.height+20).padBottom(this.footer.height+15)
     }
 
     @action.bound onTargetChange({targetStartYear, targetEndYear}: {targetStartYear: number, targetEndYear: number}) {
@@ -134,7 +154,7 @@ export default class ScatterPlot extends React.Component<{ bounds: Bounds, confi
             return null
     }
 
-    @computed get sidebarMaxWidth() { return this.bounds.width*0.5 }
+    @computed get sidebarMaxWidth() { return this.innerBounds.width*0.5 }
     @computed get sidebarMinWidth() { return 100 }
     @computed.struct get sidebarWidth() {
         const {sidebarMinWidth, sidebarMaxWidth, legend} = this
@@ -144,7 +164,7 @@ export default class ScatterPlot extends React.Component<{ bounds: Bounds, confi
     @computed get axisBox() {
         const that = this
         return new AxisBox({
-            get bounds() { return that.bounds.padBottom(that.timelineHeight).padRight(that.sidebarWidth+20) },
+            get bounds() { return that.innerBounds.padBottom(that.timelineHeight).padRight(that.sidebarWidth+20) },
             get xAxis() { return that.transform.xAxis },
             get yAxis() { return that.transform.yAxis }
         })
@@ -176,21 +196,21 @@ export default class ScatterPlot extends React.Component<{ bounds: Bounds, confi
 
     renderInner() {
         if (this.transform.failMessage)
-            return <NoData bounds={this.bounds} message={this.transform.failMessage}/>
+            return <NoData bounds={this.props.bounds} message={this.transform.failMessage}/>
 
-        const {transform, bounds, axisBox, legend, focusKeys, hoverKeys, focusColors, arrowLegend, sidebarWidth, tooltipSeries, comparisonLine} = this
+        const {transform, innerBounds, axisBox, legend, focusKeys, hoverKeys, focusColors, arrowLegend, sidebarWidth, tooltipSeries, comparisonLine} = this
         const {currentData, sizeDomain} = transform
 
         return <g>
             <AxisBoxView axisBox={axisBox} onXScaleChange={this.onXScaleChange} onYScaleChange={this.onYScaleChange}/>
             {comparisonLine && <ComparisonLine axisBox={axisBox} comparisonLine={comparisonLine}/>}
             <PointsWithLabels data={currentData} bounds={axisBox.innerBounds} xScale={axisBox.xScale} yScale={axisBox.yScale} sizeDomain={sizeDomain} onSelectEntity={this.onSelectEntity} focusKeys={focusKeys} hoverKeys={hoverKeys} onMouseOver={this.onScatterMouseOver} onMouseLeave={this.onScatterMouseLeave}/>
-            <ScatterColorLegendView legend={legend} x={bounds.right-sidebarWidth} y={bounds.top} onMouseOver={this.onLegendMouseOver} onMouseLeave={this.onLegendMouseLeave} onClick={this.onLegendClick} focusColors={focusColors}/>
-            {(arrowLegend||tooltipSeries) && <line x1={bounds.right-sidebarWidth} y1={bounds.top+legend.height+2} x2={bounds.right-5} y2={bounds.top+legend.height+2} stroke="#ccc"/>}
+            <ScatterColorLegendView legend={legend} x={innerBounds.right-sidebarWidth} y={innerBounds.top} onMouseOver={this.onLegendMouseOver} onMouseLeave={this.onLegendMouseLeave} onClick={this.onLegendClick} focusColors={focusColors}/>
+            {(arrowLegend||tooltipSeries) && <line x1={innerBounds.right-sidebarWidth} y1={innerBounds.top+legend.height+2} x2={innerBounds.right-5} y2={innerBounds.top+legend.height+2} stroke="#ccc"/>}
             {arrowLegend && <g className="clickable" onClick={this.onToggleEndpoints}>
-                {arrowLegend.render(bounds.right-sidebarWidth, bounds.top+legend.height+11)}
+                {arrowLegend.render(innerBounds.right-sidebarWidth, innerBounds.top+legend.height+11)}
             </g>}
-            {tooltipSeries && <ScatterTooltip formatY={transform.yFormatTooltip} formatX={transform.xFormatTooltip} series={tooltipSeries} maxWidth={sidebarWidth} x={bounds.right-sidebarWidth} y={bounds.top+legend.height+11+(arrowLegend ? arrowLegend.height+10 : 0)}/>}
+            {tooltipSeries && <ScatterTooltip formatY={transform.yFormatTooltip} formatX={transform.xFormatTooltip} series={tooltipSeries} maxWidth={sidebarWidth} x={innerBounds.right-sidebarWidth} y={innerBounds.top+legend.height+11+(arrowLegend ? arrowLegend.height+10 : 0)}/>}
         </g>
     }
 
@@ -198,11 +218,11 @@ export default class ScatterPlot extends React.Component<{ bounds: Bounds, confi
         const {hasTimeline} = this
         if (!hasTimeline) return undefined
 
-        const {bounds, transform, onTargetChange} = this
+        const {innerBounds, transform, onTargetChange} = this
         const {timelineYears, startYear, endYear} = transform
 
         return <Timeline 
-            bounds={bounds.fromBottom(35)} 
+            bounds={innerBounds.fromBottom(35)} 
             onTargetChange={onTargetChange} 
             years={timelineYears} 
             startYear={startYear} 
@@ -212,9 +232,14 @@ export default class ScatterPlot extends React.Component<{ bounds: Bounds, confi
     }
 
     render() {
+        const {header, footer} = this
+        const {bounds} = this.props
+
         return <g className="ScatterPlot">
+            {header.render(bounds.x, bounds.y)}
             {this.renderInner()}
             {this.renderTimeline()}
+            {footer.render(bounds.x, bounds.bottom-footer.height)}
         </g>
     }
 }

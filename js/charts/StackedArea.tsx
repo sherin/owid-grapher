@@ -20,6 +20,8 @@ import Tooltip from './Tooltip'
 import {select} from 'd3-selection'
 import {easeLinear} from 'd3-ease'
 import {rgb} from 'd3-color'
+import Header from './Header'
+import SourcesFooter from './SourcesFooter'
 
 export interface StackedAreaValue {
     x: number,
@@ -180,12 +182,6 @@ export default class StackedAreaChart extends React.Component<{ bounds: Bounds, 
         })
     }
 
-    @computed get axisBox(): AxisBox {
-        const {bounds, transform, legend} = this
-        const {xAxis, yAxis} = transform
-        return new AxisBox({bounds: bounds.padRight(legend ? legend.width+5 : 20), xAxis, yAxis})
-    }
-
     @observable hoverIndex: number
     @action.bound onHover(hoverIndex: number) {
         this.hoverIndex = hoverIndex
@@ -239,12 +235,36 @@ export default class StackedAreaChart extends React.Component<{ bounds: Bounds, 
                 .on("end", () => this.forceUpdate()) // Important in case bounds changes during transition
     }
 
+    @computed get header() {
+        const that = this
+        return new Header({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width }
+        })
+    }
+
+    @computed get footer() {
+        const that = this
+        return new SourcesFooter({
+            get chart() { return that.props.chart },
+            get maxWidth() { return that.props.bounds.width }
+        })
+    }
+
+    @computed get axisBox(): AxisBox {
+        const {bounds, transform, legend, header, footer} = this
+        const {xAxis, yAxis} = transform
+        return new AxisBox({bounds: bounds.padTop(header.height+20).padBottom(footer.height+15).padRight(legend ? legend.width+5 : 20), xAxis, yAxis})
+    }
+
     render() {
         if (this.transform.failMessage)
             return <NoData bounds={this.props.bounds} message={this.transform.failMessage}/>
             
-        const {chart, bounds, axisBox, legend, transform} = this
+        const {chart, bounds, axisBox, legend, transform, header, footer} = this
         return <g className="StackedArea">
+            {header.render(bounds.x, bounds.y)}
+
             <defs>
                 <clipPath id="boundsClip">
                     <rect x={axisBox.innerBounds.x} y={0} width={bounds.width} height={bounds.height*2}></rect>
@@ -256,6 +276,8 @@ export default class StackedAreaChart extends React.Component<{ bounds: Bounds, 
                 <Areas axisBox={axisBox} data={transform.stackedData} onHover={this.onHover}/>
             </g>
             {this.tooltip}
+
+            {footer.render(bounds.x, bounds.bottom-footer.height)}
         </g>
     }
 }

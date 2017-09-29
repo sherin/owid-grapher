@@ -4,7 +4,6 @@ import { observable, computed, action } from 'mobx'
 import {observer} from 'mobx-react'
 import * as Cookies from 'js-cookie'
 import ChartConfig from './ChartConfig'
-import ChartType from './ChartType'
 import {getQueryParams} from './Util'
 import ChartView from './ChartView'
 import {HighlightToggleConfig} from './ChartConfig'
@@ -195,7 +194,7 @@ export default class ControlsFooter extends React.Component<ControlsFooterProps>
                     {props.chartView.isEmbed && <li className="clickable icon"><a title="Open chart in new tab" href={chart.url.canonicalUrl} target="_blank"><i className="fa fa-expand"/></a></li>}
                 </ul>
             </nav>
-            {chart.tab == 'chart' && <div className="extraControls">          
+            {chart.tab == 'chart' && <div className="extraControls">
                 {chart.data.canAddData && <button onClick={this.onDataSelect}>
                     {chart.isScatter ? <span><i className="fa fa-search"/> Search</span> : <span><i className="fa fa-plus"/> Add {this.addDataTerm}</span>}
                 </button>}
@@ -204,7 +203,7 @@ export default class ControlsFooter extends React.Component<ControlsFooterProps>
                     <i className="fa fa-exchange"/> Change {chart.entityType}
                 </button>}
                 
-                {chart.type == ChartType.ScatterPlot && chart.highlightToggle && <HighlightToggle chart={chart} highlightToggle={chart.highlightToggle}/>}
+                {chart.isScatter && chart.highlightToggle && <HighlightToggle chart={chart} highlightToggle={chart.highlightToggle}/>}
                 {chart.isStackedArea && chart.stackedArea.canToggleRelative && <AbsRelToggle chart={chart}/>}
                 {chart.isScatter && chart.scatter.canToggleRelative && <AbsRelToggle chart={chart}/>}
             </div>}
