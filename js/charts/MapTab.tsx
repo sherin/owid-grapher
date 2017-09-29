@@ -3,7 +3,6 @@ import Bounds from './Bounds'
 import {observable, computed, action} from 'mobx'
 import {observer} from 'mobx-react'
 import ChoroplethMap, {ChoroplethData, GeoFeature, MapBracket, MapEntity} from './ChoroplethMap'
-import Timeline from './Timeline'
 import MapLegend, {MapLegendView} from './MapLegend'
 import {getRelativeMouse} from './Util'
 import Header from './Header'
@@ -18,6 +17,7 @@ import NoData from './NoData'
 import {select} from 'd3-selection'
 import {easeCubic} from 'd3-ease'
 import ControlsFooter from './ControlsFooter'
+import HTMLTimeline from './HTMLTimeline'
 
 interface TimelineMapProps {
     bounds: Bounds,
@@ -81,10 +81,6 @@ class TimelineMap extends React.Component<TimelineMapProps> {
         this.focusBracket = d
     }
 
-    @action.bound onTargetChange({targetStartYear}: {targetStartYear: number}) {
-        this.context.chart.map.targetYear = targetStartYear
-    }
-
     @action.bound onLegendMouseLeave() {
         this.focusBracket = null
     }
@@ -94,14 +90,10 @@ class TimelineMap extends React.Component<TimelineMapProps> {
         return this.props.years.length > 1 && !this.context.chartView.isExport
     }
 
-    @computed get timelineHeight(): number {
-        return this.hasTimeline ? 35 : 10
-    }
-
     @computed get mapLegend(): MapLegend {
         const that = this
         return new MapLegend({
-            get bounds() { return that.props.bounds.padBottom(that.timelineHeight+5) },
+            get bounds() { return that.props.bounds },
             get legendData() { return that.props.legendData },
             get title() { return that.props.legendTitle },
             get focusBracket() { return that.focusBracket },
@@ -122,11 +114,11 @@ class TimelineMap extends React.Component<TimelineMapProps> {
 
     render() {
         const { choroplethData, projection, defaultFill } = this.props
-        let { bounds, years, inputYear } = this.props
-        const {focusBracket, focusEntity, hasTimeline, timelineHeight, mapLegend, tooltip} = this
+        let { bounds } = this.props
+        const {focusBracket, focusEntity, mapLegend, tooltip} = this
         return <g className="mapTab">
             {/*<rect x={bounds.left} y={bounds.top} width={bounds.width} height={bounds.height-timelineHeight} fill="#ecf6fc"/>*/}
-            <ChoroplethMap bounds={bounds.padBottom(timelineHeight+mapLegend.height+15)} choroplethData={choroplethData} projection={projection} defaultFill={defaultFill} onHover={this.onMapMouseOver} onHoverStop={this.onMapMouseLeave} onClick={this.onClick} focusBracket={focusBracket} focusEntity={focusEntity}/>
+            <ChoroplethMap bounds={bounds.padBottom(mapLegend.height+15)} choroplethData={choroplethData} projection={projection} defaultFill={defaultFill} onHover={this.onMapMouseOver} onHoverStop={this.onMapMouseLeave} onClick={this.onClick} focusBracket={focusBracket} focusEntity={focusEntity}/>
             <MapLegendView legend={mapLegend} onMouseOver={this.onLegendMouseOver} onMouseLeave={this.onLegendMouseLeave}/>
             {/*hasTimeline && <Timeline bounds={this.props.bounds.fromBottom(timelineHeight)} onTargetChange={this.onTargetChange} years={years} startYear={inputYear} endYear={inputYear} singleYearMode={true}/>*/}
             {tooltip}
@@ -211,12 +203,18 @@ export default class MapTab extends React.Component<MapTabProps> {
             this.controlsFooterHeight = controlsFooter.getBoundingClientRect().height
     }
 
+    @action.bound onTargetChange({targetStartYear}: {targetStartYear: number}) {
+        this.props.chart.map.targetYear = targetStartYear
+    }
+
     render() {
         const {chart} = this.props
+        const {map} = this
 
         return <div className="MapTab">
             {this.renderSVG()}
             <ControlsFooter chart={chart}>
+                <HTMLTimeline onTargetChange={this.onTargetChange} years={map.data.years} startYear={map.data.targetYear} endYear={map.data.targetYear} singleYearMode={true}/>
             </ControlsFooter>
             {chart.tooltip}
         </div>
