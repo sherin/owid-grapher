@@ -34,6 +34,7 @@ interface ChartViewProps {
     isEditor?: boolean
 }
 
+@observer
 export class ChartSVGView extends React.Component<{ chart: ChartConfig, bounds: Bounds }> {
     renderPrimaryTab(bounds: Bounds): JSX.Element|undefined {
         const {chart} = this.props
