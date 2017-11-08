@@ -2,7 +2,6 @@
     & .DimensionCard {
         background: white;
         border: 1px solid #bbb;
-        padding: 10px 20px;
         margin-bottom: 5px;
 
         & header {

@@ -37,4 +37,18 @@ html, body {
         align-items: center;
         justify-content: center;
     }
+
+    & .OverrideToggle {
+        display: flex;
+        height: 100%;
+        align-items: center;
+    }
+
+    & .OverrideToggle.active {
+        color: orange;
+    }
+
+    & .OverrideToggle:not(.active) {
+        color: green;
+    }
 }
