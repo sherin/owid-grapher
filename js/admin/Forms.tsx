@@ -5,7 +5,7 @@
  */
 
 import * as React from 'react'
-import { extend, toString, numberOnly, pick, guid } from '../charts/Util'
+import { extend, numberOnly, pick, omit, guid } from '../charts/Util'
 import { bind } from 'decko'
 
 const MDButton = require('preact-material-components/Button').default
@@ -13,7 +13,12 @@ const Select = require('preact-material-components/Select').default
 const Formfield = require('preact-material-components/Formfield').default
 
 const MDCTextfield = require('@material/textfield').MDCTextfield
-const MDCCheckbox = require('@material/checkbox').MDCCheckbox
+
+
+import { FormControlLabel } from 'material-ui/Form'
+import Checkbox from 'material-ui/Checkbox'
+import MTextField from 'material-ui/TextField'
+import Switch from 'material-ui/Switch';
 
 export interface TextFieldProps extends React.HTMLAttributes<HTMLLabelElement> {
     label?: string,
@@ -51,20 +56,11 @@ export class TextField extends React.Component<TextFieldProps> {
         this.id = `textfield-${guid()}`
     }
 
-    base: HTMLDivElement
-    textfield: any
-    componentDidMount() {
-        this.textfield = new MDCTextfield(this.base.querySelector(".mdc-textfield"))
-    }
-
-    componentDidUpdate() {
-        const input = this.base.querySelector("input") as HTMLInputElement
-        input.dispatchEvent(new Event("focus"))
-    }
-
     render() {
         const { props } = this
         const passthroughProps = pick(props, ['title', 'disabled'])
+
+        return <MTextField fullWidth label={props.label} value={props.value} onChange={e => this.props.onValue(e.currentTarget.value)} helperText={props.helpText}/>
 
         return <div style={extend({display: "inline-block"}, props.style||{})}>
             <div className="mdc-textfield mdc-textfield--dense" style={{ width: "100%" }} {...passthroughProps}>
@@ -138,14 +134,7 @@ export interface NumberFieldProps {
 export class NumberField extends React.Component<NumberFieldProps> {
     render() {
         const { props } = this
-        const passthroughProps = pick(props, ['min', 'max', 'placeholder', 'disabled'])
-        if (props.label) {
-            return <label className="NumberField">
-                {props.label} <input type="text" value={toString(props.value)} onChange={(ev) => props.onValue(numberOnly(ev.currentTarget.value))} {...passthroughProps} />
-            </label>
-        } else {
-            return <input className="NumberField" type="text" value={toString(props.value)} onChange={(ev) => props.onValue(numberOnly(ev.currentTarget.value))} {...passthroughProps} />
-        }
+        return <TextField value={props.value !== undefined ? props.value.toString() : undefined} onValue={v => props.onValue(numberOnly(v))} {...omit(props, ['value', 'onValue'])}/>
     }
 }
 
@@ -198,46 +187,24 @@ export class NumericSelectField extends React.Component<NumericSelectFieldProps>
 }
 
 export interface ToggleProps {
-    label: string,
+    label?: string,
     value: boolean,
     onValue: (value: boolean) => void
 }
 
 export class Toggle extends React.Component<ToggleProps> {
-    base: HTMLDivElement
-    checkbox: any
-    componentDidMount() {
-        this.checkbox = new MDCCheckbox(this.base)
-    }
-
-    componentDidUpdate() {
-        this.checkbox.checked = this.props.value
-    }
-
     render() {
         const { props } = this
         /*return <div className="mdc-form-field">
 
         </div>*/
 
-        return <div className="mdc-form-field">
-            <div className="mdc-checkbox">
-                <input type="checkbox"
-                    className="mdc-checkbox__native-control"
-                    onChange={(ev) => props.onValue(ev.target.checked)} />
-                <div className="mdc-checkbox__background">
-                    <svg className="mdc-checkbox__checkmark"
-                        viewBox="0 0 24 24">
-                        <path className="mdc-checkbox__checkmark__path"
-                            fill="none"
-                            stroke="white"
-                            d="M1.73,12.91 8.1,19.28 22.79,4.59" />
-                    </svg>
-                    <div className="mdc-checkbox__mixedmark"></div>
-                </div>
-            </div>
-            <label>{props.label}</label>
-        </div>
+        if (!props.label) {
+            return <Switch checked={props.value} onChange={(_, isChecked) => props.onValue(isChecked)}/>
+        } else {
+            const checkbox = <Checkbox checked={props.value} onChange={(_, isChecked) => props.onValue(isChecked)}/>
+            return <FormControlLabel label={props.label} control={checkbox}/>
+        }
         /* return <FormField>
              <Checkbox checked={props.value} onChange={(ev) => props.onValue(ev.target.checked)}/> <label>{props.label}</label>
          </FormField>

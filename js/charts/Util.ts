@@ -49,9 +49,10 @@ import capitalize from 'lodash-es/capitalize'
 import sample from 'lodash-es/sample'
 import sampleSize from 'lodash-es/sampleSize'
 import pick from 'lodash-es/pick'
+import omit from 'lodash-es/omit'
 import difference from 'lodash-es/difference'
 
-export { map, sortBy, each, keys, trim, isNumber, filter, extend, isEmpty, isFinite, some, every, min, max, uniq, cloneDeep, sum, find, identity, union, debounce, includes, toString, isString, keyBy, values, flatten, groupBy, reverse, clone, reduce, noop, floor, ceil, round, toArray, throttle, has, intersection, uniqWith, without, uniqBy, capitalize, sample, sampleSize, pick, difference, sortedUniq }
+export { map, sortBy, each, keys, trim, isNumber, filter, extend, isEmpty, isFinite, some, every, min, max, uniq, cloneDeep, sum, find, identity, union, debounce, includes, toString, isString, keyBy, values, flatten, groupBy, reverse, clone, reduce, noop, floor, ceil, round, toArray, throttle, has, intersection, uniqWith, without, uniqBy, capitalize, sample, sampleSize, pick, difference, sortedUniq, omit }
 
 import { format } from 'd3-format'
 import { extent } from 'd3-array'
