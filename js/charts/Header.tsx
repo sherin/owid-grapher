@@ -19,12 +19,13 @@ class Logo {
     }
 
     @computed get bbox() {
-        const div = document.createElement('div')
+        return { width: 128, height: 64 }
+        /*const div = document.createElement('div')
         div.innerHTML = this.props.svg
         document.body.appendChild(div)
         const bbox = (div.childNodes[0] as SVGSVGElement).getBBox()
         document.body.removeChild(div)
-        return bbox
+        return bbox*/
     }
 
     @computed get scale(): number {
@@ -115,11 +116,11 @@ export default class Header {
 class HeaderView extends React.Component<{ x: number, y: number, header: Header }> {
     render() {
         const { props } = this
-        const { title, titleText, logo, subtitle } = props.header
+        const { title, logo, subtitle } = props.header
         const { chart, maxWidth } = props.header.props
 
-        if (!chart.isEmbed)
-            document.title = titleText
+//        if (!chart.isEmbed)
+//            document.title = titleText
 
         return <g className="HeaderView">
             {logo.height > 0 && logo.render(props.x + maxWidth - logo.width, props.y)}

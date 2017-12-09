@@ -10,6 +10,7 @@ const isProduction = process.argv.indexOf('-p') !== -1
 
 const serverConfig = {
     context: __dirname,
+    target: 'node',
     entry: {
         charts: "./js/node.entry.ts",
     },

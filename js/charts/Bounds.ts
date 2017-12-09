@@ -40,7 +40,10 @@ export default class Bounds {
         if (str === "")
             return Bounds.empty()
 
-        this.textBoundsCache = this.textBoundsCache || {}
+        fontFamily = "foo"
+        return new Bounds(x, y, fontSize*str.length, fontSize)
+
+        /*this.textBoundsCache = this.textBoundsCache || {}
         this.ctx = this.ctx || document.createElement('canvas').getContext('2d')
 
         if (!this.baseFontFamily) {
@@ -63,7 +66,7 @@ export default class Bounds {
         bounds = new Bounds(x, y - height, width, height)
 
         this.textBoundsCache[key] = bounds
-        return bounds
+        return bounds*/
     }
 
     /*static debugSVG(boundsArray: Bounds[], containerNode?: HTMLElement) {
