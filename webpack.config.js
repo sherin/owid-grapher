@@ -8,7 +8,41 @@ const ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
 
 const isProduction = process.argv.indexOf('-p') !== -1
 
-module.exports = {
+const serverConfig = {
+    context: __dirname,
+    entry: {
+        charts: "./js/node.entry.ts",
+    },
+    output: {
+        path: path.join(__dirname, "public/build"),
+        filename: "charts.node.js"
+    },
+    resolve: {
+        extensions: [".ts", ".tsx", ".js", ".css"],
+        alias: {
+            'react': 'preact-compat',
+            'react-dom': 'preact-compat',
+        },
+        modules: [
+  	        path.join(__dirname, "js/libs"),
+            path.join(__dirname, "css/libs"),
+            path.join(__dirname, "node_modules"),
+        ],
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                loader: "ts-loader",
+                options: {
+                    transpileOnly: true
+                }
+            }
+        ]
+    }
+}
+
+const clientConfig = {
     context: __dirname,
     entry: {
         charts: "./js/charts.entry.ts",
@@ -111,3 +145,5 @@ module.exports = {
         }
     },
 }
+
+module.exports = [clientConfig, serverConfig]

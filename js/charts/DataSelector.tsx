@@ -4,7 +4,6 @@ import { observer } from 'mobx-react'
 import { computed, action, observable } from 'mobx'
 import ChartConfig from './ChartConfig'
 import { DataKeyInfo } from './ChartData'
-const styles = require("./DataSelector.css")
 import ChartView from './ChartView'
 import FuzzySearch from './FuzzySearch'
 
