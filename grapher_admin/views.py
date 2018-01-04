@@ -32,6 +32,16 @@ from owid_grapher.various_scripts.purge_cloudflare_cache_queue import purge_clou
 from typing import Dict, Union, Optional
 from django.db import transaction
 
+def dictfetchall(cursor):
+    """
+    :param cursor: Database cursor
+    :return: Returns all rows from the cursor as a list of dicts
+    """
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
 
 def custom_login(request: HttpRequest):
     """
@@ -166,47 +176,42 @@ def config_json_by_id(request, chartid):
     :return: config json
     """
 
-    if chartid == "newChart":
-        configdict = {}
-        logos = []
-        for each in list(Logo.objects.filter(name__in=['owd'])):
-            logos.append(each.svg)
-        configdict['logosSVG'] = logos    
-    else:
-        try:
-            chart = Chart.objects.get(pk=int(chartid))
-        except Chart.DoesNotExist:
-            return HttpResponseNotFound('Invalid chart id!')
+    try:
+        chart = Chart.objects.get(pk=int(chartid))
+    except Chart.DoesNotExist:
+        return HttpResponseNotFound('Invalid chart id!')
 
-        configdict = chart.get_config()
-        configdict['variableCacheTag'] = chart.make_cache_tag()
-
-    response = JsonResponse(configdict)
-    #response['Cache-Control'] = 'public, max-age=0, s-maxage=604800'
-
-    return response
-
+    return JsonResponse(chart.config)
 
 def namespacedata(request: HttpRequest, namespace: str, cachetag: Optional[str]):
     datasets = []
 
-    def serializeVariable(variable: Variable):
-        return {
-            'name': variable.name,
-            'id': variable.id,
-        }
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT v.name, v.id, d.name as datasetName, d.namespace FROM variables as v JOIN datasets as d ON v.fk_dst_id = d.id WHERE namespace=%s ORDER BY d.updated_at DESC
+        """, [namespace])
 
-    def serializeDataset(dataset: Dataset):
-        return {
-            'name': dataset.name,
-            'namespace': dataset.namespace,
-            'variables': [serializeVariable(v) for v in dataset.variable_set.all()]
-        }
+        dataset = None
+        for row in dictfetchall(cursor):
+            if dataset is None or row['datasetName'] != dataset['name']:
+                if dataset is not None:
+                    datasets.append(dataset)
+                dataset = {
+                    'name': row['datasetName'],
+                    'namespace': row['namespace'],
+                    'variables': []
+                }
+            
+            dataset['variables'].append({
+                'id': row['id'],
+                'name': row['name']
+            })
 
-    datasets = [serializeDataset(d) for d in Dataset.objects.filter(namespace=namespace).order_by('-updated_at').prefetch_related('variable_set')]
-
+        if dataset is not None:
+            datasets.append(dataset)
+    
     response = JsonResponse({
-        'datasets': datasets,
+        'datasets': datasets
     })
 
     if cachetag:
@@ -228,6 +233,7 @@ def editordata(request: HttpRequest, cachetag: Optional[str]):
     return response
 
 
+@transaction.atomic
 def savechart(chart: Chart, data: Dict, user: User):
     isExisting = chart.id != None
 
@@ -251,13 +257,16 @@ def savechart(chart: Chart, data: Dict, user: User):
     dims = []
 
     chart.config = data
+    chart.config['lastEditedAt'] = str(timezone.now())
     chart.last_edited_at = timezone.now()
     chart.last_edited_by = user
     chart.save()
 
+    for each in ChartDimension.objects.filter(chartId=chart.pk):
+        each.delete()
+
     for i, dim in enumerate(data["dimensions"]):
-        # Note: not actually saved because the canonical dimensions are just
-        # read straight from the JSON now
+        print(dim)
         variable = Variable.objects.get(id=dim["variableId"])
 
         newdim = ChartDimension()
@@ -273,6 +282,7 @@ def savechart(chart: Chart, data: Dict, user: User):
         newdim.tolerance = dim.get('tolerance', None)
         newdim.isProjection = dim.get('isProjection', None)
         newdim.targetYear = dim.get('targetYear', None)
+        newdim.save()
 
         if dim.get('saveToVariable'):
             if newdim.displayName:
@@ -602,7 +612,7 @@ def showdataset(request: HttpRequest, datasetid: str):
     dataset_chart_ids = []
     for each in dataset_chartdims:
         dataset_chart_ids.append(each.chartId.pk)
-    dataset_charts = Chart.objects.filter(pk__in=dataset_chart_ids).values()
+    dataset_charts = Chart.objects.filter(pk__in=dataset_chart_ids)
     return render(request, 'admin.datasets.show.html', context={'current_user': request.user.name,
                                                                 'dataset': dataset_dict,
                                                                 'variables': dataset_vars.values(),
@@ -920,7 +930,7 @@ def showvariable(request: HttpRequest, variableid: str):
     chart_id_list = []
     for each in chart_dims:
         chart_id_list.append(each['chartId'])
-    charts = list(Chart.objects.filter(pk__in=chart_id_list).values('name', 'id'))
+    charts = list(Chart.objects.filter(pk__in=chart_id_list))
 
     variable_dict = {}
     variable_dict['name'] = variable.name
