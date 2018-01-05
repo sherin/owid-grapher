@@ -5,6 +5,7 @@ import {observable, action} from 'mobx'
 import {observer} from 'mobx-react'
 import { EditorFAQ } from './EditorFAQ'
 import ChartIndexPage from './ChartIndexPage'
+import VariablePage from './VariablePage'
 import AdminSidebar from './AdminSidebar'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import Link from './Link'
@@ -115,6 +116,7 @@ export default class AdminApp extends React.Component<{ admin: Admin }> {
                 <Switch>
                     <Route path="/charts/create" component={ChartEditorPage}/>
                     <Route path="/charts/:chartId/edit" render={({ match }) => <ChartEditorPage chartId={parseInt(match.params.chartId)}/>}/>
+                    <Route path="/variables/:variableId" render={({ match }) => <VariablePage variableId={parseInt(match.params.variableId)}/>}/>
                     <Route path="/" component={ChartIndexPage}/>
                 </Switch>
             </div>

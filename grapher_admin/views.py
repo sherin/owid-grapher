@@ -113,6 +113,39 @@ def chartsjson(request: HttpRequest):
         'numTotalCharts': Chart.objects.count()
     })
 
+def variablejson(request: HttpRequest, variableid: str):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                v.id, 
+                v.description,
+                v.unit,
+                v.short_unit as shortUnit,
+                v.sourceId, 
+                s.name AS sourceName,
+                v.fk_dst_id AS datasetId
+            FROM variables AS v
+            JOIN sources AS s ON v.sourceId = s.id
+            JOIN datasets AS d ON v.fk_dst_id = d.id
+            WHERE v.id=%s
+        """, [variableid])
+
+        variables = dictfetchall(cursor)
+        if len(variables) == 0:
+            return JsonErrorResponse(f"Unknown variable for id {variableid}", status=404)
+        variable = variables[0]
+
+        cursor.execute("""
+            SELECT c.id, JSON_UNQUOTE(JSON_EXTRACT(c.config, "$.title")) AS title FROM chart_dimensions AS d
+            JOIN charts AS c ON d.chartId = c.id
+            WHERE d.variableId = %s
+        """, [variableid])
+
+        variable['charts'] = dictfetchall(cursor)
+
+        return JsonResponse({ 'variable': variable })
+
+
 
 def storechart(request: HttpRequest):
     if request.method == 'POST':
@@ -132,7 +165,7 @@ def config_json_by_id(request, chartid):
     try:
         chart = Chart.objects.get(pk=int(chartid))
     except Chart.DoesNotExist:
-        return HttpResponseNotFound('Invalid chart id!')
+        return JsonErrorResponse('Invalid chart id!', status=404)
 
     chart.config['id'] = chart.id
     return JsonResponse(chart.config)

@@ -44,7 +44,7 @@ urlpatterns = [
     url(r'^grapher/admin/categories/(?P<catid>[\w]+)$', admin_views.managecategory, name="managecategory"),
     url(r'^grapher/admin/categories/(?P<catid>[\w]+)/edit/$', admin_views.editcategory, name="editcategory"),
     url(r'^grapher/admin/variables/$', admin_views.listvariables, name="listvariables"),
-    url(r'^grapher/admin/variables/(?P<variableid>[\w]+)/$', admin_views.showvariable, name="showvariable"),
+    url(r'^grapher/admin/variables/[\w]+/$', admin_views.single_page_app, name="showvariable"),
     url(r'^grapher/admin/variables/(?P<variableid>[\w]+)$', admin_views.managevariable, name="managevariable"),
     url(r'^grapher/admin/variables/(?P<variableid>[\w]+)/edit/$', admin_views.editvariable, name="editvariable"),
     url(r'^grapher/admin/sources/(?P<sourceid>[\w]+)/$', admin_views.showsource, name="showsource"),
@@ -77,12 +77,13 @@ urlpatterns = [
 
     # Admin API
     url(r'^grapher/admin/api/charts\.json$',  admin_views.chartsjson, name="chartsjson"),
-    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+).config.json$', admin_views.config_json_by_id, name="configjsonbyid"),
-    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+)/star$', admin_views.starchart, name="starchart"),
-    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+)/unstar$', admin_views.unstarchart, name="unstarchart"),
-    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+)$', admin_views.managechart, name="managechart"),  # update, destroy requests
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\d]+).config.json$', admin_views.config_json_by_id, name="configjsonbyid"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\d]+)/star$', admin_views.starchart, name="starchart"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\d]+)/unstar$', admin_views.unstarchart, name="unstarchart"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\d]+)$', admin_views.managechart, name="managechart"),  # update, destroy requests
     url(r'^grapher/admin/api/editorData/namespaces\.(?P<cachetag>[^.]*?)\.?json', admin_views.editordata, name="editordata"),
     url(r'^grapher/admin/api/editorData/(?P<namespace>[^.]*?)\.(?P<cachetag>[^.]*?)\.?json', admin_views.namespacedata, name="namespacedata"),
+    url(r'^grapher/admin/api/variables/(?P<variableid>[\d]+).json$', admin_views.variablejson, name="variablejson"),
 
     # Catchall-- single page app
     url(r'^grapher/admin.*$', admin_views.single_page_app, name="adminspa"),
