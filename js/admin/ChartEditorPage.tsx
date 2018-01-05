@@ -15,7 +15,6 @@ import ChartView from '../charts/ChartView'
 import Bounds from '../charts/Bounds'
 import SaveButtons from './SaveButtons'
 import { Modal, LoadingBlocker } from './Forms'
-import { Helmet } from 'react-helmet'
 
 @observer
 class TabBinder extends React.Component<{ editor: ChartEditor }> {
@@ -108,9 +107,6 @@ export default class ChartEditorPage extends React.Component<{ chartId?: number 
 
         return [
             <TabBinder editor={editor}/>,
-            <Helmet>
-                <title>{chart.props.title}</title>
-            </Helmet>,
             <form onSubmit={e => e.preventDefault()}>
                 <div className="p-2">
                     <ul className="nav nav-tabs">

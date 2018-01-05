@@ -23,18 +23,9 @@ from importer import views as importer_views
 from django.contrib.auth.views import logout
 
 urlpatterns = [
-    ### Admin-only
-
     url(r'^grapher/?$', owid_views.index, name="index"),
     url(r'^grapher/login$', owid_views.index, name="index"), # Backwards compatibility
-    url(r'^grapher/admin/?$', admin_views.listcharts, name="listcharts"),
     url(r'^grapher/admin/charts$', admin_views.storechart, name="storechart"),  # post request for storing
-    url(r'^grapher/admin/charts/create/?$', admin_views.createchart, name="createchart"),
-    url(r'^grapher/admin/charts/(?P<chartid>[\w]+).config.json$', admin_views.config_json_by_id, name="configjsonbyid"),
-    url(r'^grapher/admin/charts/(?P<chartid>[\w]+)/edit/?$', admin_views.editchart, name="editchart"),
-    url(r'^grapher/admin/charts/(?P<chartid>[\w]+)$', admin_views.managechart, name="managechart"),  # update, destroy requests
-    url(r'^grapher/admin/charts/(?P<chartid>[\w]+)/star$', admin_views.starchart, name="starchart"),
-    url(r'^grapher/admin/charts/(?P<chartid>[\w]+)/unstar$', admin_views.unstarchart, name="unstarchart"),
     url(r'^grapher/admin/import/?$', admin_views.importdata, name="importdata"),
     url(r'^grapher/admin/import/variables$', admin_views.store_import_data, name="storeimportdata"),  # data import post requests
     url(r'^grapher/admin/datasets/?$', admin_views.listdatasets, name="listdatasets"),
@@ -56,12 +47,6 @@ urlpatterns = [
     url(r'^grapher/admin/variables/(?P<variableid>[\w]+)/$', admin_views.showvariable, name="showvariable"),
     url(r'^grapher/admin/variables/(?P<variableid>[\w]+)$', admin_views.managevariable, name="managevariable"),
     url(r'^grapher/admin/variables/(?P<variableid>[\w]+)/edit/$', admin_views.editvariable, name="editvariable"),
-    url(r'^grapher/admin/logos/$', admin_views.listlogos, name="listlogos"),
-    url(r'^grapher/admin/logos$', admin_views.storelogo, name="storelogo"),
-    url(r'^grapher/admin/logos/create/$', admin_views.createlogo, name="createlogo"),
-    url(r'^grapher/admin/logos/(?P<logoid>[\w]+)/$', admin_views.showlogo, name="showlogo"),
-    url(r'^grapher/admin/logos/(?P<logoid>[\w]+)/edit/$', admin_views.editlogo, name="editlogo"),
-    url(r'^grapher/admin/logos/(?P<logoid>[\w]+)$', admin_views.managelogo, name="managelogo"),
     url(r'^grapher/admin/sources/(?P<sourceid>[\w]+)/$', admin_views.showsource, name="showsource"),
     url(r'^grapher/admin/sources/(?P<sourceid>[\w]+)/edit/$', admin_views.editsource, name="editsource"),
     url(r'^grapher/admin/sources/(?P<sourceid>[\w]+)$', admin_views.managesource, name="managesource"),
@@ -87,16 +72,22 @@ urlpatterns = [
     url(r'^grapher/admin/gbdriskdatasets/?$', importer_views.listgbdriskdatasets, name="listgbdriskdatasets"),
     url(r'^grapher/admin/ilostatdatasets/?$', importer_views.listilostatdatasets, name="listilostatdatasets"),
     # for future use on the frontend
-    url(r'^grapher/admin/charts\.json$',  admin_views.chartsjson, name="chartsjson"),
-    url(r'^grapher/admin/charts/create.json$', admin_views.createchart, name="createchartjson"),
-    url(r'^grapher/admin/charts/(?P<chartid>[\w]+)/edit\.json$', admin_views.editchart, name="editchartjson"),
     url(r'^grapher/admin/import.json$', admin_views.importdata, name="importdatajson"),
     url(r'^grapher/admin/users\.json$', admin_views.listusers, name="listusersjson"),
-    url(r'^grapher/admin/editorData/namespaces\.(?P<cachetag>[^.]*?)\.?json', admin_views.editordata, name="editordata"),
-    url(r'^grapher/admin/editorData/(?P<namespace>[^.]*?)\.(?P<cachetag>[^.]*?)\.?json', admin_views.namespacedata, name="namespacedata"),
+
+    # Admin API
+    url(r'^grapher/admin/api/charts\.json$',  admin_views.chartsjson, name="chartsjson"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+).config.json$', admin_views.config_json_by_id, name="configjsonbyid"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+)/star$', admin_views.starchart, name="starchart"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+)/unstar$', admin_views.unstarchart, name="unstarchart"),
+    url(r'^grapher/admin/api/charts/(?P<chartid>[\w]+)$', admin_views.managechart, name="managechart"),  # update, destroy requests
+    url(r'^grapher/admin/api/editorData/namespaces\.(?P<cachetag>[^.]*?)\.?json', admin_views.editordata, name="editordata"),
+    url(r'^grapher/admin/api/editorData/(?P<namespace>[^.]*?)\.(?P<cachetag>[^.]*?)\.?json', admin_views.namespacedata, name="namespacedata"),
+
+    # Catchall-- single page app
+    url(r'^grapher/admin.*$', admin_views.single_page_app, name="adminspa"),
 
     ### Public
-
     url(r'^grapher/admin/login$', admin_views.custom_login, name='login'),
     url(r'^grapher/admin/logout/?$', logout, {'next_page': settings.BASE_URL}, name="logout"),
     url(r'^grapher/embedCharts.js$', owid_views.embed_snippet, name="embedsnippet"),

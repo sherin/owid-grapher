@@ -13,12 +13,10 @@ export default class Admin {
     @observable errorMessage?: { title: string, content: string, isFatal?: true }
     grapherRoot: string
     basePath: string
-    cacheTag: string
     username: string
-    constructor(rootUrl: string, cacheTag: string, username: string) {
+    constructor(rootUrl: string, username: string) {
         this.grapherRoot = rootUrl
         this.basePath = "/grapher/admin"
-        this.cacheTag = cacheTag
         this.username = username
     }
 
@@ -36,6 +34,10 @@ export default class Admin {
         return urljoin(this.basePath, path)
     }
 
+    apiUrl(path: string): string {
+        return urljoin(this.basePath, 'api', path)
+    }
+
     get csrfToken() {
         const meta = document.querySelector("[name=_token]")
         if (!meta)
@@ -45,7 +47,7 @@ export default class Admin {
 
     // Make a request with no error or response handling
     async rawRequest(path: string, data: any, method: HTTPMethod) {
-        return fetch(this.url(path), {
+        return fetch(this.apiUrl(path), {
             method: method,
             credentials: 'same-origin',
             headers: {

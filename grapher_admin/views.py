@@ -62,6 +62,12 @@ def custom_login(request: HttpRequest):
     else:
         return loginview(request)
 
+# Main entry point for admin single-page app
+# Should eventually become the only bit of admin html rendered by django
+def single_page_app(request: HttpRequest):
+    return render(request, 'admin.single_page_app.html', context={
+        'current_user': request.user.name
+    })
 
 def chartsjson(request: HttpRequest):
     limit = int(request.GET.get('limit') or 10000)
@@ -107,9 +113,6 @@ def chartsjson(request: HttpRequest):
         'numTotalCharts': Chart.objects.count()
     })
 
-def listcharts(request: HttpRequest):
-    return chart_editor(request)
-
 
 def storechart(request: HttpRequest):
     if request.method == 'POST':
@@ -118,32 +121,6 @@ def storechart(request: HttpRequest):
         return savechart(chart, data, request.user)
     else:
         return HttpResponseRedirect(reverse('listcharts'))
-
-def chart_editor(request: HttpRequest):
-    # We cache the editor data based on the timestamp of the last database update
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT MAX(`MAX(updated_at)`)
-            FROM (
-                SELECT MAX(updated_at) from variables
-                UNION SELECT MAX(updated_at) from sources
-                UNION SELECT MAX(updated_at) from datasets
-            ) AS timestamps
-        """)
-        database_updated_at = cursor.fetchone()[0]
-
-    cachetag = str(int(database_updated_at.timestamp()))
-
-    return render(request, 'admin.edit_chart.html', context={
-        'current_user': request.user.name,
-        'cachetag': cachetag
-    })
-
-def createchart(request: HttpRequest):
-    return chart_editor(request)#, { "yAxis": { "min": 0 }})
-
-def editchart(request: HttpRequest, chartid: Union[str, int]):
-    return chart_editor(request)
 
 def config_json_by_id(request, chartid):
     """
@@ -1107,99 +1084,6 @@ def managelicense(request: HttpRequest, licenseid: str):
     if request.method == 'GET':
         return HttpResponseRedirect(reverse('showlicense', args=[licenseid]))
 
-
-def listlogos(request: HttpRequest):
-    logos = Logo.objects.values()
-    return render(request, 'admin.logos.html', context={'current_user': request.user.name,
-                                                        'logos': logos
-                                                        })
-
-
-def createlogo(request: HttpRequest):
-    return render(request, 'admin.logos.create.html', context={'current_user': request.user.name})
-
-
-def storelogo(request: HttpRequest):
-
-    if request.method == 'POST':
-        if not request.POST.get('name', 0):
-            messages.error(request, 'Name field should not be empty.')
-        if not request.FILES.get('image', 0):
-            messages.error(request, 'Image field should not be empty.')
-        if messages.get_messages(request):
-            return HttpResponseRedirect(reverse('createlogo'))
-        svg = request.FILES['image'].read()
-        logo = Logo(name=request.POST['name'], svg=svg)
-        logo.save()
-        messages.success(request, 'Logo created!')
-        return HttpResponseRedirect(reverse('listlogos'))
-
-    if request.method == 'GET':
-        return HttpResponseRedirect(reverse('listlogos'))
-
-
-def showlogo(request: HttpRequest, logoid: str):
-    try:
-        logo = Logo.objects.get(pk=int(logoid))
-    except Logo.DoesNotExist:
-        return HttpResponseNotFound('Logo does not exist!')
-
-    logo = {
-        'id': logo.pk,
-        'name': logo.name,
-        'svg': logo.svg
-    }
-
-    return render(request, 'admin.logos.show.html', context={'current_user': request.user.name,
-                                                             'logo': logo})
-
-
-def editlogo(request: HttpRequest, logoid: str):
-    try:
-        logo = Logo.objects.get(pk=int(logoid))
-    except Logo.DoesNotExist:
-        return HttpResponseNotFound('Logo does not exist!')
-
-    logo = {
-        'id': logo.pk,
-        'name': logo.name
-    }
-
-    return render(request, 'admin.logos.edit.html', context={'current_user': request.user.name,
-                                                             'logo': logo})
-
-
-def managelogo(request: HttpRequest, logoid: str):
-    try:
-        logo = Logo.objects.get(pk=int(logoid))
-    except Logo.DoesNotExist:
-        return HttpResponseNotFound('Logo does not exist!')
-
-    if request.method == 'POST':
-        if request.POST.get('_method', '') == 'PATCH':
-            image_no_change = 0
-            if not request.POST.get('name', 0):
-                messages.error(request, 'Name field should not be empty.')
-            if not request.FILES.get('image', 0):
-                image_no_change = 1
-            if messages.get_messages(request):
-                return HttpResponseRedirect(reverse('editlogo', args=[logoid]))
-            if not image_no_change:
-                svg = request.FILES['image'].read()
-                logo.name = request.POST['name']
-                logo.svg = svg
-            else:
-                logo.name = request.POST['name']
-            logo.save()
-            messages.success(request, 'Logo updated!')
-            return HttpResponseRedirect(reverse('showlogo', args=[logoid]))
-        if request.POST.get('_method', '') == 'DELETE':
-            logo.delete()
-            messages.success(request, 'Logo deleted!')
-            return HttpResponseRedirect(reverse('listlogos'))
-
-    if request.method == 'GET':
-        return HttpResponseRedirect(reverse('showlogo', args=[logoid]))
 
 def showsource(request: HttpRequest, sourceid: str):
     try:

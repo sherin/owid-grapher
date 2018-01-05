@@ -7,7 +7,6 @@ import { EditorFAQ } from './EditorFAQ'
 import ChartIndexPage from './ChartIndexPage'
 import AdminSidebar from './AdminSidebar'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import { Helmet } from 'react-helmet'
 import Link from './Link'
 import { LoadingBlocker, Modal } from './Forms'
 
@@ -110,9 +109,6 @@ export default class AdminApp extends React.Component<{ admin: Admin }> {
 
         return <Router basename={admin.basePath}>
             <div className="AdminApp">
-                <Helmet>
-                    <title>owid-grapher</title>
-                </Helmet>
                 <AdminNavbar admin={admin}/>
                 <AdminErrorMessage admin={admin}/>
                 <AdminLoader admin={admin}/>
