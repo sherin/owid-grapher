@@ -15,6 +15,7 @@ import ChartView from '../charts/ChartView'
 import Bounds from '../charts/Bounds'
 import SaveButtons from './SaveButtons'
 import { Modal, LoadingBlocker } from './Forms'
+import AdminLayout from './AdminLayout'
 
 @observer
 class TabBinder extends React.Component<{ editor: ChartEditor }> {
@@ -96,10 +97,12 @@ export default class ChartEditorPage extends React.Component<{ chartId?: number 
     }
 
     render() {
-        return <div className="ChartEditorPage">
-            {(this.editor === undefined || this.editor.currentRequest) && <LoadingBlocker/>}
-            {this.editor !== undefined && this.renderReady(this.editor)}
-        </div>
+        return <AdminLayout>
+            <main className="ChartEditorPage">
+                {(this.editor === undefined || this.editor.currentRequest) && <LoadingBlocker/>}
+                {this.editor !== undefined && this.renderReady(this.editor)}
+            </main>
+        </AdminLayout>
     }
 
     renderReady(editor: ChartEditor) {
