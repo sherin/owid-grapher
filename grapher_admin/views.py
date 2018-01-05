@@ -118,6 +118,7 @@ def variablejson(request: HttpRequest, variableid: str):
         cursor.execute("""
             SELECT 
                 v.id, 
+                v.name,
                 v.description,
                 v.unit,
                 v.short_unit as shortUnit,
