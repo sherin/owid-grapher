@@ -7,6 +7,7 @@ import { EditorFAQ } from './EditorFAQ'
 import ChartIndexPage from './ChartIndexPage'
 import AdminSidebar from './AdminSidebar'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { Helmet } from 'react-helmet'
 import Link from './Link'
 import { LoadingBlocker, Modal } from './Forms'
 
@@ -52,7 +53,7 @@ class AdminLoader extends React.Component<{ admin: Admin }> {
 }
 
 @observer
-export default class AdminApp extends React.Component<{ admin: Admin }> {
+class AdminNavbar extends React.Component<{ admin: Admin }> {
     @observable isFAQ: boolean = false
     @observable isSidebar: boolean = false
 
@@ -64,45 +65,57 @@ export default class AdminApp extends React.Component<{ admin: Admin }> {
         this.isSidebar = !this.isSidebar
     }
 
+    render() {
+        const {admin} = this.props
+        const {isFAQ, isSidebar} = this
+
+        return <nav className="navbar navbar-dark bg-dark flex-row navbar-expand-lg">
+            {isFAQ && <EditorFAQ onClose={this.onToggleFAQ}/>}
+            {isSidebar && <FixedOverlay onDismiss={this.onToggleSidebar}><AdminSidebar/></FixedOverlay>}
+            <button className="navbar-toggler" type="button" onClick={this.onToggleSidebar}>
+                <span className="navbar-toggler-icon"></span>
+            </button>
+            <Link className="navbar-brand" to="/">owid-grapher</Link>
+            <ul className="navbar-nav">
+                <li className="nav-item">
+                    <Link className="nav-link" to="/charts/create" native>
+                        <i className="fa fa-plus"/> New chart
+                    </Link>
+                </li>
+                <li className="nav-item">
+                    <a className="nav-link" onClick={this.onToggleFAQ}>
+                        FAQ
+                    </a>
+                </li>
+            </ul>
+            <ul className="navbar-nav ml-auto">
+                <li className="nav-item">
+                    <Link className="nav-link logout" to="/logout" native>
+                        {admin.username}
+                    </Link>
+                </li>
+            </ul>
+        </nav>
+    }
+}
+
+@observer
+export default class AdminApp extends React.Component<{ admin: Admin }> {
     getChildContext() {
         return { admin: this.props.admin }
     }
 
     render() {
         const {admin} = this.props
-        const {isFAQ, isSidebar} = this
 
         return <Router basename={admin.basePath}>
             <div className="AdminApp">
-                <nav className="navbar navbar-dark bg-dark flex-row navbar-expand-lg">
-                    <button className="navbar-toggler" type="button" onClick={this.onToggleSidebar}>
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <Link className="navbar-brand" to="/">owid-grapher</Link>
-                    <ul className="navbar-nav">
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/charts/create" native>
-                                <i className="fa fa-plus"/> New chart
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <a className="nav-link" onClick={this.onToggleFAQ}>
-                                FAQ
-                            </a>
-                        </li>
-                    </ul>
-                    <ul className="navbar-nav ml-auto">
-                        <li className="nav-item">
-                            <Link className="nav-link logout" to="/logout" native>
-                                {admin.username}
-                            </Link>
-                        </li>
-                    </ul>
-                </nav>
-                {isFAQ && <EditorFAQ onClose={this.onToggleFAQ}/>}
+                <Helmet>
+                    <title>owid-grapher</title>
+                </Helmet>
+                <AdminNavbar admin={admin}/>
                 <AdminErrorMessage admin={admin}/>
                 <AdminLoader admin={admin}/>
-                {isSidebar && <FixedOverlay onDismiss={this.onToggleSidebar}><AdminSidebar/></FixedOverlay>}
                 <Switch>
                     <Route path="/charts/create" component={ChartEditorPage}/>
                     <Route path="/charts/:chartId/edit" render={({ match }) => <ChartEditorPage chartId={parseInt(match.params.chartId)}/>}/>

@@ -121,7 +121,7 @@ class HeaderView extends React.Component<{ x: number, y: number, header: Header 
         const { title, titleText, logo, subtitle } = props.header
         const { chart, maxWidth } = props.header.props
 
-        if (!isNode && !chart.isEmbed)
+        if (!isNode && !chart.isEmbed && !chart.isEditor)
             document.title = titleText
 
         if (chart.isMediaCard)

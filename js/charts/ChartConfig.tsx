@@ -159,6 +159,10 @@ export default class ChartConfig {
     @observable.ref isLocalExport: boolean
     @observable.ref baseFontSize: number = 16
 
+    get isEditor(): boolean {
+        return App.isEditor
+    }
+
     vardata: VariableData
     data: ChartData
     url: URLBinder
