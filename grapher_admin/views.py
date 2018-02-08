@@ -32,6 +32,8 @@ from typing import Dict, Union, Optional
 from django.db import transaction
 from django.core.cache import cache
 import requests
+from django.views.decorators.csrf import csrf_exempt
+import hashlib
 
 def get_query_string(request):
     """
@@ -2076,3 +2078,23 @@ def variables(request, ids):
     response['Access-Control-Allow-Origin'] = '*'
 
     return response
+
+@csrf_exempt
+def receiveGoogleDoc(request):
+    data = json.dumps(request.POST)
+    m = hashlib.md5()
+    m.update(data.encode('utf-8'))
+    filename = m.hexdigest()
+    outpath = os.path.join("/tmp", filename)
+    with open(outpath, 'w') as f:
+        f.write(data)
+
+    return HttpResponseRedirect("/grapher/admin/publish/" + filename)
+
+def previewGoogleDoc(request, dochash: str):
+    try:
+        p = subprocess.Popen(f'cd {settings.THEME_DIR} && node dist/src/previewGoogleDoc.js {shlex.quote(dochash)}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={})
+        output = p.communicate()
+    except Exception as e:
+        output = str(e.output)
+    return HttpResponse(output)

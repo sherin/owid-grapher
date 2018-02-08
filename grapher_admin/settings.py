@@ -18,6 +18,14 @@ pymysql.install_as_MySQLdb()
 # Env-loaded settings
 ENV=os.environ['ENV']
 
+# SECURITY WARNING: don't run with debug turned on in production!
+if ENV == 'development':
+    DEBUG = True
+elif ENV == 'production':
+    DEBUG = False
+else:
+    DEBUG = False
+
 SECRET_KEY=os.environ['SECRET_KEY']
 DB_NAME=os.environ['DB_NAME']
 DB_USER=os.environ['DB_USER']
@@ -51,6 +59,8 @@ DATASETS_TMP_LOCATION=os.environ['DATASETS_TMP_LOCATION']
 
 NETLIFY_ACCESS_TOKEN=os.environ['NETLIFY_ACCESS_TOKEN']
 
+THEME_DIR=os.environ['THEME_DIR']
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -60,14 +70,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = SECRET_KEY
-
-# SECURITY WARNING: don't run with debug turned on in production!
-if ENV == 'development':
-    DEBUG = True
-elif ENV == 'production':
-    DEBUG = False
-else:
-    DEBUG = False
 
 TESTING = sys.argv[1:2] == ['test']
 

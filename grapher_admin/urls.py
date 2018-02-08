@@ -79,6 +79,7 @@ urlpatterns = [
     url(r'^grapher/admin/ilostatdatasets/?$', importer_views.listilostatdatasets, name="listilostatdatasets"),
     url(r'^grapher/admin/testall', admin_views.test_all, name="testall"),
     url(r'^grapher/admin/testsome', admin_views.testsome, name="testsome"),
+    url(r'^grapher/admin/publish/(?P<dochash>[\w]+)$', admin_views.previewGoogleDoc, name="previewGoogleDoc"),
     # for future use on the frontend
     url(r'^grapher/admin/charts\.json$',  admin_views.chartsjson, name="chartsjson"),
     url(r'^grapher/admin/charts/create.json$', admin_views.createchart, name="createchartjson"),
@@ -95,6 +96,7 @@ urlpatterns = [
     url(r'^grapher/admin/login/?$', admin_views.custom_login, name='login'),
     url(r'^grapher/admin/logout/?$', logout, {'next_page': settings.BASE_URL}, name="logout"),
     url(r'^grapher/admin/invitation/(?P<code>[\w]+)$', admin_views.register_by_invite, name="registerbyinvite"),
+    url(r'^grapher/admin/receiveGoogleDoc/?$', admin_views.receiveGoogleDoc, name="receiveGoogleDoc"),
     url(r'^grapher/wdi/WDI_Country_info.xls$', importer_views.serve_wb_country_info_xls, name='servewdicountryinfo'),
 
     url(r'^grapher/edstats/EDSTATS_Country_info.xls$', importer_views.serve_wb_country_info_xls, name='serveedstatscountryinfo'),
@@ -106,6 +108,6 @@ urlpatterns = [
     url(r'^grapher/hnpqstats/HNPQSTATS_Country_info.xls$', importer_views.serve_wb_country_info_xls, name='servehnpqstatscountryinfo'),
     url(r'^grapher/aspire/ASPIRE_Country_info.xls$', importer_views.serve_wb_country_info_xls, name='serveaspirecountryinfo'),
 
-    ### Glue code until we can go fully static
+    # Development only: serve static build
     url(r'^grapher/(?P<path>.+)/?$', glue_views.servestatic, name="servestatic"),
 ]
