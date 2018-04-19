@@ -7,7 +7,7 @@ export default class Variable extends Model<Variable> {
     @Column description!: string
 }*/
 
-import * as db from '../db'
+import db from '../db'
 import * as _ from 'lodash'
 
 export async function getVariableData(variableIds: number[]): Promise<any> {

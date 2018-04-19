@@ -6,7 +6,7 @@ import * as randomstring from 'randomstring'
 // Backwards compatibility
 const hashers = require('node-django-hashers')
 
-import * as db from '../db'
+import db from '../db'
 import { SECRET_KEY, SESSION_COOKIE_AGE } from '../settings'
 import { renderToHtmlPage } from './serverUtil'
 import LoginPage from './LoginPage'

@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import {spawn} from 'child_process'
 import * as path from 'path'
 
-import * as db from '../db'
+import db from '../db'
 import {BASE_DIR, DB_NAME} from '../settings'
 import {JsonError, expectInt, isValidSlug, shellEscape} from './serverUtil'
 import Chart from '../models/Chart'

@@ -7,7 +7,7 @@ import * as minimatch from 'minimatch'
 import * as urljoin from 'url-join'
 import * as querystring from 'querystring'
 
-import {ENV, BUILD_GRAPHER_URL, BUILD_DIR} from '../settings'
+import {ENV, BUILD_URL, BUILD_DIR} from '../settings'
 
 const devServer = Router()
 
@@ -57,27 +57,29 @@ async function serveFile(res: Response, targetPath: string) {
 devServer.get('/*', async (req, res) => {
     if (ENV === "production") {
         // No dev server in production, redirect to static build
-        res.redirect(urljoin(BUILD_GRAPHER_URL, req.path) + (req.query ? `?${querystring.stringify(req.query)}` : ''))
+        res.redirect(urljoin(BUILD_URL, req.path) + (req.query ? `?${querystring.stringify(req.query)}` : ''))
         return
     }
 
     const redirects = await getRedirects()
     const headerRules = await getHeaderRules()
 
+    // Apply redirects
     for (const redirect of redirects) {
-        if (redirect.from === `/grapher${req.path}`) {
+        if (redirect.from === req.path) {
             res.redirect(redirect.to)
             return
         }
     }
 
+    // Apply header rules
     for (const rule of headerRules) {
-        if (rule.match(`/grapher${req.path}`)) {
+        if (rule.match(`${req.path}`)) {
             rule.apply(res)
         }
     }
 
-    let targetPath = path.join(BUILD_DIR, "grapher", req.path)
+    let targetPath = path.join(BUILD_DIR, req.path)
     if (fs.existsSync(targetPath+".html"))
         targetPath += ".html"
 

@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import * as db from '../db'
+import db from '../db'
 import ChartConfig, { ChartConfigProps } from '../../js/charts/ChartConfig'
 import {getVariableData} from './Variable'
 

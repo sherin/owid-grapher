@@ -1,13 +1,15 @@
 import * as _ from 'lodash'
 import * as parseUrl from 'url-parse'
-import {createConnection, DatabaseConnection} from './database'
-import {DB_NAME} from './settings'
-import * as parseArgs from 'minimist'
-const argv = parseArgs(process.argv.slice(2))
-import { getVariableData } from './models/Variable'
 import * as fs from 'fs-extra'
 import * as filenamify from 'filenamify'
 const md5 = require('md5')
+
+import DatabaseConnection from './util/DatabaseConnection'
+import {DB_NAME} from './settings'
+import { getVariableData } from './models/Variable'
+
+import * as parseArgs from 'minimist'
+const argv = parseArgs(process.argv.slice(2))
 
 declare var global: any
 global.window = { location: { search: "" }}
@@ -43,7 +45,7 @@ async function getChartsBySlug(db: DatabaseConnection) {
 }
 
 async function main(chartUrls: string[], outDir: string) {
-    const db = createConnection({ database: DB_NAME })
+    const db = new DatabaseConnection({ database: DB_NAME })
     try {
         await fs.mkdirp(outDir)
         const chartsBySlug = await getChartsBySlug(db)

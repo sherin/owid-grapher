@@ -10,7 +10,7 @@ import * as glob from 'glob'
 import * as shell from 'shelljs'
 const md5 = require('md5')
 
-import * as db from './db'
+import db from './db'
 import { embedSnippet } from './staticGen'
 import { ChartConfigProps } from '../js/charts/ChartConfig'
 import {ChartPage} from './ChartPage'
