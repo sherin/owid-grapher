@@ -26,10 +26,13 @@ interface Settings {
     SESSION_COOKIE_AGE: number
     WORDPRESS_DB_NAME: string
     WORDPRESS_DIR: string
+    WORDPRESS_URL: string
 
     // These settings are inferred from other settings
+    BUILD_GRAPHER_URL: string
     BUILD_GRAPHER_PATH: string
     BUILD_DIR: string
+    HTTPS_ONLY: boolean
 }
 
 const env: Settings = (process.env as any)
@@ -40,5 +43,7 @@ env.BUILD_DIR = path.join(env.BASE_DIR, "public")
 env.SESSION_COOKIE_AGE = process.env.SESSION_COOKIE_AGE ? parseInt(process.env.SESSION_COOKIE_AGE) : 1209600
 
 env.BUILD_GRAPHER_PATH = "/grapher"
+env.BUILD_GRAPHER_URL = env.BUILD_URL + "/grapher"
+env.HTTPS_ONLY = env.ENV === "production"
 
 export = env

@@ -18,7 +18,7 @@ const app = express()
 db.connect()
 
 app.use('/admin', adminRoutes)
-app.use('/', devStaticServer)
+app.use('/', routes)
 
 // Send errors to slack
 if (SLACK_ERRORS_WEBHOOK_URL) {

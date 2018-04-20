@@ -14,8 +14,12 @@ const wpdb = new DatabaseConnection({
     database: WORDPRESS_DB_NAME
 })
 
-export async function query(queryStr: string, params?: any[]): Promise<any[]> {
+export function query(queryStr: string, params?: any[]): Promise<any[]> {
     return wpdb.query(queryStr, params)
+}
+
+export function get(queryStr: string, params?: any[]): Promise<any> {
+    return wpdb.get(queryStr, params)
 }
 
 export function end() {

@@ -32,10 +32,11 @@ export default class DatabaseConnection {
 
     constructor(config: mysql.PoolConfig) {
         this.config = config
+        this.pool = mysql.createPool(this.config)
     }
 
     connect() {
-        this.pool = mysql.createPool(this.config)
+        return
     }
 
     getConnection(): Promise<mysql.PoolConnection> {
