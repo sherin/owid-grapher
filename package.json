@@ -101,6 +101,7 @@
     "process-nextick-args": "^2.0.0",
     "randomstring": "^1.1.5",
     "react-router-dom": "^4.2.2",
+    "run-middleware": "^0.6.6",
     "run-parallel": "^1.1.6",
     "sass-loader": "^6.0.7",
     "save-svg-as-png": "^1.2.0",
@@ -121,10 +122,12 @@
     "url-join": "^2.0.2",
     "url-loader": "^1.0.1",
     "url-parse": "^1.2.0",
+    "url-slug": "^2.0.0",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.12",
     "webpack-dev-server": "^3.1.1",
     "webpack-manifest-plugin": "^2.0.0-rc.2",
-    "webpack-parallel-uglify-plugin": "^1.1.0"
+    "webpack-parallel-uglify-plugin": "^1.1.0",
+    "wpautop": "^1.0.0"
   }
 }

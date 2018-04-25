@@ -1,4 +1,4 @@
-import {BUILD_GRAPHER_URL, BUILD_GRAPHER_PATH} from './settings'
+import {BUILD_GRAPHER_URL, BUILD_GRAPHER_PATH} from '../settings'
 
 import * as React from 'react'
 import * as path from 'path'
@@ -6,8 +6,8 @@ import * as urljoin from 'url-join'
 import * as _ from 'lodash'
 const md5 = require('md5')
 
-import { webpack } from './staticGen'
-import { ChartConfigProps } from '../js/charts/ChartConfig'
+import { webpack } from '../staticGen'
+import { ChartConfigProps } from '../../js/charts/ChartConfig'
 
 // HACK (Mispy): Typescript bindings don't support crossorigin attribute on link as of 14 Mar 2018
 declare module 'react' {
@@ -16,7 +16,7 @@ declare module 'react' {
    }
 }
 
-export const ChartPage = (props: { chart: ChartConfigProps }) => {
+const ChartPage = (props: { chart: ChartConfigProps }) => {
     const {chart} = props
 
     const pageTitle = chart.title
@@ -104,3 +104,5 @@ export const ChartPage = (props: { chart: ChartConfigProps }) => {
         </body>
     </html>
 }
+
+export default ChartPage

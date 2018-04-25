@@ -1,4 +1,4 @@
-import {BUILD_URL} from '../settings'
+import { BUILD_URL } from '../settings'
 import * as React from 'react'
 import { Head } from './Head'
 import { SiteHeader } from './SiteHeader'
@@ -6,7 +6,7 @@ import { SiteFooter } from './SiteFooter'
 import { CategoryWithEntries } from './wpdb'
 import { formatDate } from './formatting'
 
-export const FrontPage = (props: { entries: CategoryWithEntries[], posts: { title: string, slug: string, date: Date }[] }) => {
+const FrontPage = (props: { entries: CategoryWithEntries[], posts: { title: string, slug: string, date: Date }[] }) => {
     const { entries, posts } = props
 
     return <html>
@@ -76,3 +76,5 @@ export const FrontPage = (props: { entries: CategoryWithEntries[], posts: { titl
         </body>
     </html>
 }
+
+export default FrontPage

@@ -5114,6 +5114,10 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
+lodash@:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
+
 "lodash@>=3.5 <5", lodash@^4.0.0, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.5.1, lodash@~4.17.4:
   version "4.17.5"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
@@ -7477,6 +7481,12 @@ run-async@^2.0.0, run-async@^2.2.0:
   dependencies:
     is-promise "^2.1.0"
 
+run-middleware@^0.6.6:
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/run-middleware/-/run-middleware-0.6.6.tgz#1344813be69a740105b487db0bd5fa3d0a036a42"
+  dependencies:
+    lodash ""
+
 run-parallel@^1.1.6:
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/run-parallel/-/run-parallel-1.1.8.tgz#70e4e788f13a1ad9603254f6a2277f3843a5845c"
@@ -8586,6 +8596,10 @@ underscore@~1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.6.0.tgz#8b38b10cacdef63337b8b24e4ff86d45aea529a8"
 
+unidecode@0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/unidecode/-/unidecode-0.1.8.tgz#efbb301538bc45246a9ac8c559d72f015305053e"
+
 union-value@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/union-value/-/union-value-1.0.0.tgz#5c71c34cb5bad5dcebe3ea0cd08207ba5aa1aea4"
@@ -8728,6 +8742,12 @@ url-parse@^1.1.8, url-parse@^1.2.0:
   dependencies:
     querystringify "~1.0.0"
     requires-port "~1.0.0"
+
+url-slug@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/url-slug/-/url-slug-2.0.0.tgz#a789d5aed4995c0d95af33377ad1d5c68d4d7027"
+  dependencies:
+    unidecode "0.1.8"
 
 url-to-options@^1.0.1:
   version "1.0.1"
@@ -9118,6 +9138,10 @@ worker-farm@^1.3.1, worker-farm@^1.5.2:
   resolved "https://registry.yarnpkg.com/worker-farm/-/worker-farm-1.6.0.tgz#aecc405976fab5a95526180846f0dba288f3a4a0"
   dependencies:
     errno "~0.1.7"
+
+wpautop@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/wpautop/-/wpautop-1.0.0.tgz#e6114aec0985e4678cd517786c2b24990373d5ec"
 
 wrap-ansi@^2.0.0:
   version "2.1.0"

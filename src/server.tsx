@@ -7,7 +7,8 @@ import devStaticServer from './admin/devServer'
 import {NODE_SERVER_PORT, SLACK_ERRORS_WEBHOOK_URL} from './settings'
 
 import adminRoutes from './admin/adminRoutes'
-import routes from './routes'
+import grapherRoutes from './grapher/grapherRoutes'
+import articleRoutes from './articles/articleRoutes'
 
 import * as React from 'react'
 
@@ -18,7 +19,8 @@ const app = express()
 db.connect()
 
 app.use('/admin', adminRoutes)
-app.use('/', routes)
+app.use('/grapher', grapherRoutes)
+app.use('/', articleRoutes)
 
 // Send errors to slack
 if (SLACK_ERRORS_WEBHOOK_URL) {

@@ -13,7 +13,8 @@ module.exports = (env, argv) => {
         entry: {
             charts: "./js/charts.entry.ts",
             admin: "./js/admin.entry.ts",
-            oldadmin: "./js/oldadmin.entry.ts"
+            oldadmin: "./js/oldadmin.entry.ts",
+            articles: "./js/articles/articles.entry.ts",
         },
         optimization: {
             splitChunks: {

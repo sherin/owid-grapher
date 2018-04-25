@@ -26,7 +26,7 @@ export const Head = (props: { canonicalUrl: string, pageTitle?: string, pageDesc
         <meta name="twitter:title" content={pageTitle}/>
         <meta name="twitter:description" content={pageDesc}/>
         <meta name="twitter:image" content={imageUrl}/>
-        <link rel="stylesheet" href={`${BUILD_ASSETS_URL}/owid.css`}/>
+        <link rel="stylesheet" href={`${BUILD_ASSETS_URL}/articles.css`}/>
         {props.children}
     </head>
 }
