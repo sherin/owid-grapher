@@ -3,6 +3,7 @@ require('express-async-errors')
 const errorToSlack = require('express-error-slack').default
 
 import db from './db'
+import * as wpdb from './articles/wpdb'
 import {NODE_SERVER_PORT, SLACK_ERRORS_WEBHOOK_URL} from './settings'
 
 import routes from './routes'
@@ -14,6 +15,7 @@ const app = express()
 //app.use(express.urlencoded())
 
 db.connect()
+wpdb.connect()
 
 app.use('/', routes)
 

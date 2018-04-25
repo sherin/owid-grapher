@@ -1,7 +1,7 @@
 import db from './db'
 import * as wpdb from './articles/wpdb'
 
-export async function getRedirects(): Promise<string[]> {
+export async function getRedirects(): Promise<string> {
     const redirects = [
         // Let's Encrypt certbot verification
         "/.well-known/* https://owid.cloud/.well-known/:splat 200",
@@ -57,5 +57,5 @@ export async function getRedirects(): Promise<string[]> {
         }
     }
 
-    return redirects
+    return redirects.join("\n")
 }

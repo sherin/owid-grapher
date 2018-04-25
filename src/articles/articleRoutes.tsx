@@ -113,6 +113,7 @@ app.get('/atom.xml', async (req, res) => {
 // TODO /about/foo custom permalinks
 app.get('/:slug', async (req, res) => {
     const permalink = await wpdb.get(`SELECT post_id FROM wp_postmeta WHERE meta_key='custom_permalink' AND meta_value=?`, [req.params.slug])
+    console.log(permalink)
 
     let row
     if (permalink !== undefined) {

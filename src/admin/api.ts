@@ -2,6 +2,7 @@ import * as express from 'express'
 import {Express, Router} from 'express'
 import * as _ from 'lodash'
 import {spawn} from 'child_process'
+import {purgePaths} from '../build'
 import * as path from 'path'
 
 import db from '../db'

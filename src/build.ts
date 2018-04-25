@@ -2,9 +2,13 @@ import * as parseArgs from 'minimist'
 import * as os from 'os'
 import * as path from 'path'
 import * as fs from 'fs-extra'
+import * as _ from 'lodash'
 
-import { BUILD_DIR } from './settings'
+import { getHeaders } from './headers'
+import { getRedirects } from './redirects'
+import { WORDPRESS_DIR, BASE_DIR, BUILD_DIR } from './settings'
 import * as wpdb from './articles/wpdb'
+import * as shell from 'shelljs'
 import db from './db'
 
 const argv = parseArgs(process.argv.slice(2))
@@ -25,18 +29,61 @@ function request(url: string): Promise<Response> {
     })
 }
 
+// TODO proper task queue
+const queue: string[] = []
+
+// Add urls to the queue for recaching
+export async function purge(urls: string[], userId?: number) {
+    queue.push(...urls)
+}
+
+// Purge all chart html
+async function purgeGrapherHtml() {
+    const rows = await db.query(`SELECT JSON_UNQUOTE(JSON_EXTRACT(charts.config, "$.slug")) AS slug FROM charts`)
+    const paths = _.sortBy(rows.map((row: any) => `/${row.slug}`) as string[])
+    purge(paths)
+}
+
+async function triggerBuild() {
+    while (queue.length > 0) {
+        const url = queue.pop() as string
+        await buildUrl(url)
+    }
+}
+
 async function buildUrl(url: string) {
     const res = await request(url)
     const outPath = path.join(BUILD_DIR, url.match(/\.\w+$/) ? url : `${url}.html`)
     await fs.mkdirp(path.dirname(outPath))
-    await fs.writeFile(outPath, res.data)
-    console.log(outPath)
+
+    if (res.code === 404 && fs.existsSync(outPath)) {
+        await fs.unlink(outPath)
+    } else if (res.code === 200) {
+        await fs.writeFile(outPath, res.data)
+    }
+
+    // TODO remove directory if nothing in it
+}
+
+async function build() {
+
+    // Bake redirects and headers
+    await fs.writeFile(`${BUILD_DIR}/_redirects`, await getRedirects())
+    await fs.writeFile(`${BUILD_DIR}/_headers`, await getHeaders())
+
+    // Copy static content
+    shell.exec(`rsync -havz --delete ${WORDPRESS_DIR}/wp-content ${BUILD_DIR}/`)
+    shell.exec(`rsync -havz --delete ${WORDPRESS_DIR}/wp-includes ${BUILD_DIR}/`)
+    shell.exec(`rsync -havz --delete ${WORDPRESS_DIR}/slides/ ${BUILD_DIR}/slides`)
+    shell.exec(`rsync -havz --delete ${BASE_DIR}/public/* ${BUILD_DIR}/`)
 }
 
 async function main(email: string, name: string, message: string) {
     db.connect()
     wpdb.connect()
-    buildUrl("/child-mortality")
+
+    await purgeGrapherHtml()
+    await triggerBuild()
     db.end()
     wpdb.end()
     /*routes.runMiddleware("/child-mortality", (code, data) => {
