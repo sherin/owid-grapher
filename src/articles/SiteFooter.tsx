@@ -15,7 +15,7 @@ export const SiteFooter = () => {
             <a href="https://github.com/owid">GitHub</a>
             <a href="/support">Donate</a>
         </nav>
-        <script src={`${BUILD_ASSETS_URL}/js/owid.js`}/>
+        <script src={`${BUILD_ASSETS_URL}/articles.js`}/>
         <script src={`${BUILD_URL}/grapher/embedCharts.js`}/>
     </footer>
 }

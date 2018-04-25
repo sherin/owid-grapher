@@ -3,12 +3,9 @@ require('express-async-errors')
 const errorToSlack = require('express-error-slack').default
 
 import db from './db'
-import devStaticServer from './admin/devServer'
 import {NODE_SERVER_PORT, SLACK_ERRORS_WEBHOOK_URL} from './settings'
 
-import adminRoutes from './admin/adminRoutes'
-import grapherRoutes from './grapher/grapherRoutes'
-import articleRoutes from './articles/articleRoutes'
+import routes from './routes'
 
 import * as React from 'react'
 
@@ -18,9 +15,7 @@ const app = express()
 
 db.connect()
 
-app.use('/admin', adminRoutes)
-app.use('/grapher', grapherRoutes)
-app.use('/', articleRoutes)
+app.use('/', routes)
 
 // Send errors to slack
 if (SLACK_ERRORS_WEBHOOK_URL) {

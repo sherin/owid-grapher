@@ -27,6 +27,10 @@ export default class Chart {
         return new Chart(row.id, JSON.parse(row.config))
     }
 
+    get variableIds() {
+        return this.config.dimensions.map(d => d.variableId)
+    }
+
     id: number
     config: ChartConfigProps
     constructor(id: number, config: ChartConfigProps) {

@@ -3,8 +3,8 @@ import * as React from 'react'
 import { Head } from './Head'
 import { SiteHeader } from './SiteHeader'
 import { SiteFooter } from './SiteFooter'
-import { CategoryWithEntries } from '../wpdb'
-import { formatAuthors, formatDate } from '../formatting'
+import { CategoryWithEntries } from './wpdb'
+import { formatAuthors, formatDate } from './formatting'
 import * as _ from 'lodash'
 
 interface PostMeta {
@@ -43,7 +43,7 @@ const BlogIndexPage = (props: { entries: CategoryWithEntries[], posts: PostMeta[
                     <nav className="navigation pagination" role="navigation">
                         <h2 className="screen-reader-text">Posts navigation</h2>
                         <div className="nav-link">
-                            {pageNums.map(num => 
+                            {pageNums.map(num =>
                                 <a className={"page-numbers" + (num === pageNum ? " current" : "")} href={num === 1 ? '/blog/' : `/blog/page/${num}`}>{num}</a>
                             )}
                         </div>

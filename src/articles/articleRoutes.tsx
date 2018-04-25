@@ -3,14 +3,17 @@ import * as React from 'react'
 import * as url from 'url'
 import * as path from 'path'
 import * as glob from 'glob'
+import * as _ from 'lodash'
+import * as fs from 'fs-extra'
 
-import {WORDPRESS_DIR} from '../settings'
+import {BUILD_URL, WORDPRESS_DIR} from '../settings'
 import * as wpdb from './wpdb'
 import {renderToHtmlPage, expectInt} from '../admin/serverUtil'
-import {formatPost} from './formatting'
+import {formatPost, FormattedPost} from './formatting'
 import FrontPage from './FrontPage'
 import ArticlePage from './ArticlePage'
 import SubscribePage from './SubscribePage'
+import BlogIndexPage from './BlogIndexPage'
 import BlogPostPage from './BlogPostPage'
 
 const app = express()
@@ -36,7 +39,7 @@ app.get('/', async (req, res) => {
 })
 
 app.get('/subscribe', async (req, res) => {
-    return renderToHtmlPage(<SubscribePage/>)
+    res.send(renderToHtmlPage(<SubscribePage/>))
 })
 
 async function renderBlogIndexByPageNum(pageNum: number) {
@@ -53,8 +56,8 @@ async function renderBlogIndexByPageNum(pageNum: number) {
             try {
                 const pathname = url.parse(post.imageUrl).pathname as string
                 const paths = glob.sync(path.join(WORDPRESS_DIR, pathname.replace(/.png/, "*.png")))
-                const sortedPaths = _.sortBy(paths, path => fs.statSync(path).size)
-                post.imageUrl = sortedPaths[sortedPaths.length-3].replace(WORDPRESS_DIR, '')    
+                const sortedPaths = _.sortBy(paths, p => fs.statSync(p).size)
+                post.imageUrl = sortedPaths[sortedPaths.length-3].replace(WORDPRESS_DIR, '')
             } catch (err) {
                 console.error(err)
                 // Just use the big one
@@ -66,7 +69,6 @@ async function renderBlogIndexByPageNum(pageNum: number) {
     return renderToHtmlPage(<BlogIndexPage entries={entries} posts={posts} pageNum={pageNum} numPages={numPages}/>)
 }
 
-
 app.get('/blog', async (req, res) => {
     res.send(await renderBlogIndexByPageNum(1))
 })
@@ -75,9 +77,50 @@ app.get('/blog/page/:pageNum', async (req, res) => {
     res.send(await renderBlogIndexByPageNum(expectInt(req.params.pageNum)))
 })
 
+app.get('/atom.xml', async (req, res) => {
+    const postRows = await wpdb.query(`SELECT * FROM wp_posts WHERE post_type='post' AND post_status='publish' ORDER BY post_date DESC LIMIT 10`)
+
+    const posts: FormattedPost[] = []
+    for (const row of postRows) {
+        const fullPost = await wpdb.getFullPost(row)
+        posts.push(await formatPost(fullPost))
+    }
+
+    const feed = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Our World in Data</title>
+    <subtitle>Living conditions around the world are changing rapidly. Explore how and why.</subtitle>
+    <id>${BUILD_URL}/</id>
+    <link type="text/html" rel="alternate" href="${BUILD_URL}"/>
+    <link type="application/atom+xml" rel="self" href="${BUILD_URL}/atom.xml"/>
+    <updated>${posts[0].date.toISOString()}</updated>
+    ${posts.map(post => `<entry>
+        <title>${post.title}</title>
+    <id>${BUILD_URL}/${post.slug}</id>
+        <link rel="alternate" href="${BUILD_URL}/${post.slug}"/>
+        <published>${post.date.toISOString()}</published>
+        <updated>${post.modifiedDate.toISOString()}</updated>
+        ${post.authors.map(author => `<author><name>${author}</name></author>`).join("")}
+        <summary>${post.excerpt}</summary>
+    </entry>`).join("\n")}
+</feed>
+`
+
+    res.set('Content-Type', 'text/xml')
+    res.send(feed)
+})
+
+// TODO /about/foo custom permalinks
 app.get('/:slug', async (req, res) => {
-    // TODO custom permalinks
-    const row = await wpdb.get(`SELECT * FROM wp_posts WHERE (post_type='page' OR post_type='post') AND post_status='publish' AND post_name = ?`, [req.params.slug])
+    const permalink = await wpdb.get(`SELECT post_id FROM wp_postmeta WHERE meta_key='custom_permalink' AND meta_value=?`, [req.params.slug])
+
+    let row
+    if (permalink !== undefined) {
+        row = await wpdb.get(`SELECT * FROM wp_posts WHERE (post_type='page' OR post_type='post') AND post_status='publish' AND ID = ?`, [permalink.post_id])
+    } else {
+        row = await wpdb.get(`SELECT * FROM wp_posts WHERE (post_type='page' OR post_type='post') AND post_status='publish' AND post_name = ?`, [req.params.slug])
+    }
+
     const post = await wpdb.getFullPost(row)
 
     const entries = await wpdb.getEntriesByCategory()

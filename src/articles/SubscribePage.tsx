@@ -1,10 +1,10 @@
-import * as settings from '../settings'
+import { BUILD_URL } from '../settings'
 import * as React from 'react'
 import { Head } from './Head'
 import { SiteHeader } from './SiteHeader'
 import { SiteFooter } from './SiteFooter'
-import { CategoryWithEntries } from '../wpdb'
-import { formatDate } from '../formatting'
+import { CategoryWithEntries } from './wpdb'
+import { formatDate } from './formatting'
 
 export default function SubscribePage() {
     const style = `
@@ -40,7 +40,7 @@ export default function SubscribePage() {
     `
 
     return <html>
-        <Head pageTitle="Subscribe" canonicalUrl={`${settings.BAKED_URL}/subscribe`}>
+        <Head pageTitle="Subscribe" canonicalUrl={`${BUILD_URL}/subscribe`}>
             <style dangerouslySetInnerHTML={{__html: style}}/>
         </Head>
         <body className="SubscribePage">
