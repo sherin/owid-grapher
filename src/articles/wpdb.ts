@@ -14,6 +14,10 @@ const wpdb = new DatabaseConnection({
     database: WORDPRESS_DB_NAME
 })
 
+export function connect() {
+    wpdb.connect()
+}
+
 export function query(queryStr: string, params?: any[]): Promise<any[]> {
     return wpdb.query(queryStr, params)
 }

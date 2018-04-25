@@ -39,7 +39,7 @@ const env: Settings = (process.env as any)
 
 env.ENV = (env.ENV === "production" || process.env.NODE_ENV === "production") ? "production" : "development"
 env.BASE_DIR = path.join(__dirname, "../../")
-env.BUILD_DIR = path.join(env.BASE_DIR, "public")
+env.BUILD_DIR = path.join(env.BASE_DIR, "build")
 env.SESSION_COOKIE_AGE = process.env.SESSION_COOKIE_AGE ? parseInt(process.env.SESSION_COOKIE_AGE) : 1209600
 
 env.BUILD_GRAPHER_PATH = "/grapher"
