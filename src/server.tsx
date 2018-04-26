@@ -5,7 +5,6 @@ const errorToSlack = require('express-error-slack').default
 import db from './db'
 import * as wpdb from './articles/wpdb'
 import {NODE_SERVER_PORT, SLACK_ERRORS_WEBHOOK_URL} from './settings'
-
 import routes from './routes'
 
 import * as React from 'react'
@@ -18,6 +17,7 @@ db.connect()
 wpdb.connect()
 
 app.use('/', routes)
+app.use(express.static('public'))
 
 // Send errors to slack
 if (SLACK_ERRORS_WEBHOOK_URL) {

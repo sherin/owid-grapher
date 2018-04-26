@@ -40,15 +40,8 @@ export async function purge(urls: string[], userId?: number) {
 // Purge all chart html
 async function purgeGrapherHtml() {
     const rows = await db.query(`SELECT JSON_UNQUOTE(JSON_EXTRACT(charts.config, "$.slug")) AS slug FROM charts`)
-    const paths = _.sortBy(rows.map((row: any) => `/${row.slug}`) as string[])
+    const paths = _.sortBy(rows.map((row: any) => `/grapher/${row.slug}`) as string[])
     purge(paths)
-}
-
-async function triggerBuild() {
-    while (queue.length > 0) {
-        const url = queue.pop() as string
-        await buildUrl(url)
-    }
 }
 
 async function buildUrl(url: string) {
@@ -62,27 +55,44 @@ async function buildUrl(url: string) {
         await fs.writeFile(outPath, res.data)
     }
 
+    console.log(outPath)
+
     // TODO remove directory if nothing in it
 }
 
-async function build() {
-
+async function finalizeBuild() {
     // Bake redirects and headers
     await fs.writeFile(`${BUILD_DIR}/_redirects`, await getRedirects())
     await fs.writeFile(`${BUILD_DIR}/_headers`, await getHeaders())
 
-    // Copy static content
+    // Sync static content
     shell.exec(`rsync -havz --delete ${WORDPRESS_DIR}/wp-content ${BUILD_DIR}/`)
     shell.exec(`rsync -havz --delete ${WORDPRESS_DIR}/wp-includes ${BUILD_DIR}/`)
     shell.exec(`rsync -havz --delete ${WORDPRESS_DIR}/slides/ ${BUILD_DIR}/slides`)
     shell.exec(`rsync -havz --delete ${BASE_DIR}/public/* ${BUILD_DIR}/`)
 }
 
+async function deploy() {
+    if (fs.existsSync(path.join(BUILD_DIR, "netlify.toml"))) {
+        // Deploy directly to Netlify (faster than using the github hook)
+        shell.exec(`cd ${BUILD_DIR} && netlifyctl deploy -b .`)
+    }
+}
+
+async function triggerBuild() {
+    while (queue.length > 0) {
+        const url = queue.shift() as string
+        await buildUrl(url)
+    }
+
+    await finalizeBuild()
+    await deploy()
+}
+
 async function main(email: string, name: string, message: string) {
     db.connect()
     wpdb.connect()
 
-    await purgeGrapherHtml()
     await triggerBuild()
     db.end()
     wpdb.end()

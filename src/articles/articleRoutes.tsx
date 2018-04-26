@@ -5,10 +5,11 @@ import * as path from 'path'
 import * as glob from 'glob'
 import * as _ from 'lodash'
 import * as fs from 'fs-extra'
+import * as parseUrl from 'url-parse'
 
 import {BUILD_URL, WORDPRESS_DIR} from '../settings'
 import * as wpdb from './wpdb'
-import {renderToHtmlPage, expectInt} from '../admin/serverUtil'
+import {renderToHtmlPage, expectInt, HttpError} from '../admin/serverUtil'
 import {formatPost, FormattedPost} from './formatting'
 import FrontPage from './FrontPage'
 import ArticlePage from './ArticlePage'
@@ -35,6 +36,7 @@ app.get('/', async (req, res) => {
 
     const entries = await wpdb.getEntriesByCategory()
 
+    res.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
     res.send(renderToHtmlPage(<FrontPage entries={entries} posts={posts}/>))
 })
 
@@ -110,20 +112,23 @@ app.get('/atom.xml', async (req, res) => {
     res.send(feed)
 })
 
-// TODO /about/foo custom permalinks
-app.get('/:slug', async (req, res) => {
-    const permalink = await wpdb.get(`SELECT post_id FROM wp_postmeta WHERE meta_key='custom_permalink' AND meta_value=?`, [req.params.slug])
-    console.log(permalink)
+// Get wordpress pages/posts (due to custom permalinks slug may include slashes)
+app.get(/.*/, async (req, res) => {
+    const pathSlug = req.path.slice(1)
+    const permalink = await wpdb.get(`SELECT post_id FROM wp_postmeta WHERE meta_key='custom_permalink' AND meta_value=? OR meta_value=?`, [pathSlug, pathSlug+'/'])
 
     let row
     if (permalink !== undefined) {
         row = await wpdb.get(`SELECT * FROM wp_posts WHERE (post_type='page' OR post_type='post') AND post_status='publish' AND ID = ?`, [permalink.post_id])
     } else {
-        row = await wpdb.get(`SELECT * FROM wp_posts WHERE (post_type='page' OR post_type='post') AND post_status='publish' AND post_name = ?`, [req.params.slug])
+        row = await wpdb.get(`SELECT * FROM wp_posts WHERE (post_type='page' OR post_type='post') AND post_status='publish' AND post_name = ?`, [pathSlug])
+    }
+
+    if (row === undefined) {
+        throw new HttpError("No such post", 404)
     }
 
     const post = await wpdb.getFullPost(row)
-
     const entries = await wpdb.getEntriesByCategory()
     const formatted = await formatPost(post, undefined)//this.grapherExports)
     const html = renderToHtmlPage(

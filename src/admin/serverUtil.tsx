@@ -12,6 +12,14 @@ export class JsonError extends Error {
     }
 }
 
+export class HttpError extends Error {
+    status: number
+    constructor(message: string, status?: number) {
+        super(message)
+        this.status = status || 400
+    }
+}
+
 // Fail-fast integer conversion, for e.g. ids in url params
 export function expectInt(value: any): number {
     const num = parseInt(value)

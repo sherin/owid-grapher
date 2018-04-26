@@ -140,18 +140,13 @@ export async function formatPostLegacy(post: FullPost, html: string, grapherExpo
     }
 
     // Replace grapher iframes with static previews
-    if (grapherExports) {
-        const grapherIframes = $("iframe").toArray().filter(el => (el.attribs['src']||'').match(/\/grapher\//))
-        for (const el of grapherIframes) {
-            const src = el.attribs['src']
-            const chart = grapherExports.get(src)
-            if (chart) {
-                const output = `<figure data-grapher-src="${src}" class="grapherPreview"><a href="${src}" target="_blank"><div><img src="${chart.svgUrl}"/></div></a></div>`
-                const $p = $(el).closest('p')
-                $(el).remove()
-                $p.after(output)
-            }
-        }
+    const grapherIframes = $("iframe").toArray().filter(el => (el.attribs['src']||'').match(/\/grapher\//))
+    for (const el of grapherIframes) {
+        const src = el.attribs['src']
+        const output = `<figure data-grapher-src="${src}" class="grapherPreview"><a href="${src}" target="_blank"><div><img src="${src}"/></div></a></div>`
+        const $p = $(el).closest('p')
+        $(el).remove()
+        $p.after(output)
     }
 
     // Any remaining iframes: ensure https embeds

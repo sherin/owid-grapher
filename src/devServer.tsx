@@ -7,7 +7,7 @@ import * as minimatch from 'minimatch'
 import * as urljoin from 'url-join'
 import * as querystring from 'querystring'
 
-import {ENV, BUILD_URL, BUILD_DIR} from '../settings'
+import {ENV, BUILD_URL, BUILD_DIR} from './settings'
 
 const devServer = Router()
 
